@@ -1,5 +1,5 @@
 # PLC
-Infinite Yield plugin named PLC
+The prison life plugin for Infinite Yield
 
 - Use loadstring (PLC). You dont have do
 - Don't deobfuscate it. ok
