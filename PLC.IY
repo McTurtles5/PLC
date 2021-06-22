@@ -26,4 +26,4 @@ _G.PLCdata.admin.blacklisted = {-- People you want to EXCULDE from everyone admi
 }
 
 -- Don't go to loadstring you you could epicly crash
-return loadstring(game:HttpGet("https://pastebin.com/raw/8izsrysD", true))()
+return loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC(Obfuscated).IY"))()
