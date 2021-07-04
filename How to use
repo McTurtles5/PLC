@@ -6,3 +6,10 @@ How to use PLC.IY
 4. Make sure it is the file type like in the screenshot
 5. Execute Infinite Yield and run the command "addplguin PLC"
 6. After this it should load and you can use PLC now
+
+How to use PLC admin giver
+
+- Make sure you have PLC
+- Add \ Remove people permenantly by change the Admins or SuperAdmins table
+- Temporarily add people with "padmin [plr]"
+- Temporarily remove people with "punadmin [plr]"
