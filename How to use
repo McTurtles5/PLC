@@ -4,7 +4,7 @@ How to use PLC.IY
 2. Download "PLC.IY" in this project
 3. Put PLC.IY in the workspace folder of your exploit
 4. Make sure it is the file type like in the screenshot
-5. Execute Infinite Yield and run the command "addplguin PLC"
+5. Execute Infinite Yield and run the command "addplugin PLC"
 6. After this it should load and you can use PLC now
 
 How to use PLC admin giver
