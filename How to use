@@ -11,5 +11,5 @@ How to use PLC admin giver
 
 - Make sure you have PLC
 - Add \ Remove people permenantly by change the Admins or SuperAdmins table
-- Temporarily add people with "padmin [plr]"
-- Temporarily remove people with "punadmin [plr]"
+- Temporarily add people with "admin [plr]"
+- Temporarily remove people with "unadmin [plr]"
