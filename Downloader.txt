@@ -13,7 +13,7 @@ if writefile then
     local data = game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC.IY")
     notify("Installing...", "Fetched from web and is now installing")
     writefile("PLC.iy", data)
-    notify("Downloaded!", "PLC was downloaded, run the command "addplugin PLC" on Infinite Yield!")
+    notify("Downloaded!", "PLC was downloaded, run the command 'addplugin PLC' on Infinite Yield!")
   end)
   if not s then
     notify("Error!", "An unexpected error occured and PLC did not install")
