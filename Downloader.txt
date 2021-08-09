@@ -1,3 +1,7 @@
+--// DOWNLOADER CODE \\
+
+-- Execute this code to download PLC
+
 local StarterGui = game:GetService("StarterGui")
 local function notify(title, text)
   StarterGui:SetCore("SendNotification", {Title = title, Text = text})
