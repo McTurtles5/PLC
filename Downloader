@@ -4,8 +4,17 @@ local function notify(title, text)
 end
 
 if writefile then
-  notify("Downloading...", "Fetching the latest PLC script")
-  local data = 
+  local s, e = pcall(function()
+    notify("Downloading...", "Fetching the latest PLC script")
+    local data = game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC.IY")
+    notify("Installing...", "Fetched from web and is now installing")
+    writefile("PLC.iy", data)
+    notify("Downloaded!", "PLC was downloaded, run the command "addplugin PLC" on Infinite Yield!")
+  end)
+  if not s then
+    notify("Error!", "An unexpected error occured and PLC did not install")
+    warn("Failed to download!, "..e)
+  end
 else
   notify("Can't download!", "Your exploit is incompatable and cannot use PLC (missing writefile)")
 end
