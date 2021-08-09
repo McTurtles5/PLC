@@ -2,8 +2,12 @@
 
 The Infinite Yield plugin for Prison Life
 
-- Read "How to use" to know how to use
+# Installation
+
+- Read "How to use" to see the installation
+
+# Usage
+
 - Use loadstring ( PLC.IY ). You dont have do
-- Don't deobfuscate it. ok
-- Also don't re-project it as your own
-(I made this script on github)
+- Read "How to use" to see give adimin usage
+- Also don't re-project it as your own (I made this script on github)
