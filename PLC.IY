@@ -210,4 +210,4 @@ _G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 }
 
 -- Don't go to loadstring you you could epicly crash
-return loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC(Obfuscated).IY"))()
+return loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC(source).IY"))()
