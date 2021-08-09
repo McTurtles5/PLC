@@ -1,0 +1,11 @@
+local StarterGui = game:GetService("StarterGui")
+local function notify(title, text)
+  StarterGui:SetCore("SendNotification", {Title = title, Text = text})
+end
+
+if writefile then
+  notify("Downloading...", "Fetching the latest PLC script")
+  local data = 
+else
+  notify("Can't download!", "Your exploit is incompatable and cannot use PLC (missing writefile)")
+end
