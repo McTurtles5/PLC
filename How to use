@@ -1,5 +1,13 @@
 How to use PLC.IY
 
+Easy way:
+
+1. Download Infinite Yield if you dont have it. PLC is a plugin for it
+2. Execute the downloader code in Downloader.txt
+3. Execute Infinite Yield and run the command "addplugin PLC"
+
+Hard way:
+
 1. Download Infinite Yield if you dont have it. PLC is a plugin for it
 2. Download "PLC.IY" in this project
 3. Put PLC.IY in the workspace folder of your exploit
