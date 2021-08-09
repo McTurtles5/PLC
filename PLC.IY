@@ -21,8 +21,197 @@ _G.PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
 _G.PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
     "bigboss"
 }
-_G.PLCdata.admin.blacklisted = {-- People you want to EXCULDE from everyone admin (Username)
+_G.PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
     "notepicgamer"
+}
+
+_G.PLCdata.admin.prefix = ":" -- The give admin prefix
+
+_G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
+	["pfastkill"] = {
+		["Name"] = "k",
+		["Aliases"] = {}
+	},
+	["pkill"] = {
+		["Name"] = "tk",
+		["Aliases"] = {"tkill"}
+	},
+	["pteamcolor"] = {
+		["Name"] = "pteamcolor",
+		["Aliases"] = {"teamc", "tc"}
+	},
+	["pteam"] = {
+		["Name"] = "pteam",
+		["Aliases"] = {"t"}
+	},
+	["pcrash"] = {
+		["Name"] = "crash",
+		["Aliases"] = {}
+	},
+	["pgetgun"] = {
+		["Name"] = "getgun",
+		["Aliases"] = {"gun", "item", "get"}
+	},
+	["phardrespawn"] = {
+		["Name"] = "hardrespawn",
+		["Aliases"] = {"hre"}
+	},
+	["pauto"] = {
+		["Name"] = "auto",
+		["Aliases"] = {"autore", "autorespawn"}
+	},
+	["pka"] = {
+		["Name"] = "arua",
+		["Aliases"] = {"killarua", "ka"}
+	},
+	["pfastpunch"] = {
+		["Name"] = "fastpunch",
+		["Aliases"] = {"superpunch", "fp"}
+	},
+	["psuperfastpunch"] = {
+		["Name"] = "superfastpunch",
+		["Aliases"] = {"fastsuperpunch", "sfp"}
+	},
+	["parmorgod"] = {
+		["Name"] = "armorgod",
+		["Aliases"] = {"agod"}
+	},
+	["pcriminal"] = {
+		["Name"] = "criminal",
+		["Aliases"] = {"crim"}
+	},
+	["parrest"] = {
+		["Name"] = "arrest",
+		["Aliases"] = {"ar"}
+	},
+	["pgive"] = {
+		["Name"] = "give",
+		["Aliases"] = {}
+	}, 
+	["pdeletshield"] = {
+		["Name"] = "deletshield",
+		["Aliases"] = {"noshield"}
+	},
+	["pgetcolor"] = {
+		["Name"] = "getcolor",
+		["Aliases"] = {"notifycolor"}
+	},
+	["pfastcar"] = {
+		["Name"] = "fastcar",
+		["Aliases"] = {"racecar"}
+	},
+	["pdamage"] = {
+		["Name"] = "damage",
+		["Aliases"] = {}
+	},
+	["p18+"] = {
+		["Name"] = "18+",
+		["Aliases"] = {"\112\112", "\68\65\68\68\89\73\84\83\66\73\71"} -- dont see what it says pls
+	},
+	["ploadout"] = {
+		["Name"] = "loadout",
+		["Aliases"] = {"getloadout"}
+	},
+	["psaveloadout"] = {
+		["Name"] = "saveloadout",
+		["Aliases"] = {"writeloadout"}
+	},
+	["pdeletloadout"] = {
+		["Name"] = "deletloadout",
+		["Aliases"] = {}
+	},
+	["pfixfade"] = {
+		["Name"] = "fixfade",
+		["Aliases"] = {"restorefade"}
+	},
+	["ptase"] = {
+		["Name"] = "tase",
+		["Aliases"] = {}
+	},
+	["pmodgun"] = {
+		["Name"] = "modgun",
+		["Aliases"] = {}
+	},
+	["pnoreloadtime"] = {
+		["Name"] = "noreloadtime",
+		["Aliases"] = {"fastreload", "fastr"}
+	},
+	["pinfammo"] = {
+		["Name"] = "infammo",
+		["Aliases"] = {}
+	},
+	["pswatak"] = {
+		["Name"] = "swatak",
+		["Aliases"] = {"fakem4", "fakem4a1", "bootlegm4a1", "bootlegm4"}
+	},
+	["pearape"] = {
+		["Name"] = "earape",
+		["Aliases"] = {"loudnoise", "loud"}
+	},
+	["padmin"] = {
+		["Name"] = "admin",
+		["Aliases"] = {}
+	},
+	["punadmin"] = {
+		["Name"] = "unadmin",
+		["Aliases"] = {}
+	},
+	["pgetadmins"] = {
+		["Name"] = "getadmins",
+		["Aliases"] = {"chatnotifyadmins"}
+	},
+	["pcar"] = {
+		["Name"] = "car",
+		["Aliases"] = {"spawncar", "summoncar"}
+	},
+	["pdeletcar"] = {
+		["Name"] = "deletcar",
+		["Aliases"] = {"removecar"}
+	},
+	["ptogglefastbring"] = {
+		["Name"] = "togglefastbring",
+		["Aliases"] = {"turnfastbring", "tfb"}
+	},
+	["pfasteat"] = {
+		["Name"] = "fasteat",
+		["Aliases"] = {"hungry"}
+	},
+	["pantitase"] = {
+		["Name"] = "antitase",
+		["Aliases"] = {"notase", "tase=bad"}
+	},
+	["panticrash"] = {
+		["Name"] = "anticrash",
+		["Aliases"] = {"nocrash"}
+	},
+	["pcamlookat"] = {
+		["Name"] = "camlookat",
+		["Aliases"] = {}
+	},
+	["pvirus"] = {
+		["Name"] = "virus",
+		["Aliases"] = {}
+	},
+	["punvirus"] = {
+		["Name"] = "unvirus",
+		["Aliases"] = {"cure"}
+	},
+	["pgivearua"] = {
+		["Name"] = "givearua",
+		["Aliases"] = {}
+	},
+	["premovearua"] = {
+		["Name"] = "removearua",
+		["Aliases"] = {}
+	},
+	["pjoinjobid"] = {
+		["Name"] = "joinjobid",
+		["Aliases"] = {}
+	},
+	["pkey"] = {
+		["Name"] = "key",
+		["Aliases"] = {}
+	},
 }
 
 -- Don't go to loadstring you you could epicly crash
