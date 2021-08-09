@@ -15,14 +15,14 @@ _G.PLCdata = {} -- DO NOT REMOVE
 _G.PLCdata.admin = {} -- DO NOT REMOVE
 _G.PLCdata.admin.everyone = false -- If you want everyone to be admin
 _G.PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
-    "epicgamer",
-    "epicgamerII"
+	"epicgamer",
+	"epicgamerII"
 }
 _G.PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
-    "bigboss"
+	"bigboss"
 }
 _G.PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
-    "notepicgamer"
+	"notepicgamer"
 }
 
 _G.PLCdata.admin.prefix = ":" -- The give admin prefix
