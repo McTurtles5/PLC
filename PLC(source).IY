@@ -2,13 +2,11 @@
 
 -- This isen't the correct file by the way
 
--- I swear if you steal this I will...
-
 -- Don't scroll too fast or page could comit die
 
 _G.PLCdata.RenderConnections = _G.PLCdata.RenderConnections or {}
 _G.PLCdata.lastloadout = nil
-_G.PLCdata.loadout = { -- Your loadout (NOT USED, USE LOADOUT COMMANDS "loadout" "saveloadout" "deletloadout")
+_G.PLCdata.loadout = { -- Your loadout
 	[1] = "M9";
 	[2] = 0;
 	[3] = 0;
@@ -16,8 +14,15 @@ _G.PLCdata.loadout = { -- Your loadout (NOT USED, USE LOADOUT COMMANDS "loadout"
 	[5] = "M4A1";
 }
 
-
-loadstring("\95\71\46\80\76\67\101\103\103\32\61\32\34\121\111\117\32\97\114\101\32\103\97\109\101\105\110\103\34\32\102\117\110\99\116\105\111\110\32\95\71\46\80\76\67\101\103\103\118\105\114\117\115\40\41\108\111\99\97\108\32\115\32\61\32\73\110\115\116\97\110\99\101\46\110\101\119\40\34\83\111\117\110\100\34\44\32\103\97\109\101\58\71\101\116\83\101\114\118\105\99\101\40\34\83\111\117\110\100\83\101\114\118\105\99\101\34\41\41\115\46\76\111\111\112\101\100\32\61\32\116\114\117\101\32\115\46\83\111\117\110\100\73\100\32\61\32\34\114\98\120\97\115\115\101\116\105\100\58\47\47\53\50\56\55\49\51\57\52\52\57\34\32\119\97\105\116\40\51\41\32\115\58\80\108\97\121\40\41\115\46\80\108\97\121\98\97\99\107\83\112\101\101\100\32\61\32\49\46\50\53\32\101\110\100")
+_G.PLCegg = "you are gameing"
+function _G.PLCeggvirus()
+	local s = Instance.new("Sound", game:GetService("SoundService"))
+	s.Looped = true
+	s.SoundId = "rbxassetid://5287139449"
+	wait(3)
+	s:Play()
+	s.PlaybackSpeed = 1.25
+end
 
 --[[
 template
@@ -134,49 +139,83 @@ local function IsArrested(plr)
 end
 
 local function Respawn(spawnpos)
+	local camtrackback = 4 -- How many frames the cam track goes back by (the higher: less chance of camera reset but more visible spliceing)
+
 	local plr = Players.LocalPlayer
 	local char = plr.Character
 	local pos = nil
 	local vel = nil
 	local camframe = nil
-	local cam = workspace:FindFirstChildOfClass("Camera")
 	local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
 	local Neutral = plr.Team == game:GetService("Teams"):WaitForChild("Neutral")
-	if cam then
-		camframe = cam.CFrame
+	local trackcam = true
+	local track = nil
+	local camtracks = {}
+	local currentsub = workspace.CurrentCamera.CameraSubject
+	local last = nil
+	if workspace.CurrentCamera then
+		camframe = workspace.CurrentCamera.CFrame
 	end
 	pcall(function()
 		pos = spawnpos or root.CFrame
-		vel = root.Velocity
+		function update()
+			if not root or not root.Parent or root == nil or root.Parent == nil then
+				track:Disconnect()
+				return
+			end
+			if not spawnpos then
+				pos = root.CFrame
+			end
+			last = workspace.CurrentCamera.CFrame
+			camframe = workspace.CurrentCamera.CFrame
+			if trackcam and workspace.CurrentCamera and workspace.CurrentCamera.CameraSubject == currentsub and currentsub then
+				table.insert(camtracks, workspace.CurrentCamera.CFrame)
+			end
+			vel = root.Velocity
+		end
+		track = RS.RenderStepped:Connect(update)
+		update()
 	end)
 	if IsArrested(plr) then
+		if track then
+			track:Disconnect()
+		end
 		char:BreakJoints()
-		repeat RS.Heartbeat:Wait()
-		until not char or char.Parent == nil
+		local current = plr.Character
+		while current and current.Parent and current ~= nil and current.parent ~= nil do
+			RS.RenderStepped:Wait()
+		end
 	else
 		workspace.Remote.loadchar:InvokeServer("\110\111\111\111\111\111\32\58\40", Neutral and "Bright orange")
 	end
-	repeat RS.Heartbeat:Wait() until plr.Character
+	trackcam = false
+	while not plr.Character do
+		RS.RenderStepped:Wait()
+	end
+	if track then
+		track:Disconnect()
+	end
 	char = plr.Character
 	if not char.PrimaryPart then
 		char:GetPropertyChangedSignal("PrimaryPart"):Wait()
 	end
 	root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
-	cam = workspace:FindFirstChildOfClass("Camera")
 	local hum = char:FindFirstChildOfClass("Humanoid")
 
 	game:GetService("StarterGui"):SetCoreGuiEnabled("Backpack", true)
 	if Neutral then
 		Team("n")
 	end
-	if cam and camframe then
-		cam.CFrame = camframe
-	end
+	camframe = camtracks[math.max(1, #camtracks - camtrackback)]
 	pcall(function()
 		if pos then
 			local cs = 0
 			repeat
+				local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
 				root.CFrame = pos
+				if workspace.CurrentCamera and camframe then
+					workspace.CurrentCamera.CFrame = camframe
+				end
 				RS.RenderStepped:Wait()
 				root.Velocity = Vector3.new(0, 0, 0)
 				if (root.CFrame.Position - pos.Position).magnitude < 5 then
@@ -193,8 +232,8 @@ local function Respawn(spawnpos)
 			root.Velocity = vel
 		end
 	end)
-	if cam and camframe then
-		cam.CFrame = camframe
+	if workspace.CurrentCamera and camframe then
+		workspace.CurrentCamera.CFrame = camframe
 	end
 end
 
@@ -415,6 +454,57 @@ local function KillArua(speaker)
 	end
 end
 
+local anticrim = false
+local last = "Really black"
+local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Connect(function()
+	local color = tostring(Players.LocalPlayer.TeamColor)
+	if anticrim and color == "Really red" then --                                                                                                          hello gamer
+		local move = nil
+		local dir = nil
+		local dist = 10
+		for _, spawn in pairs(workspace["Criminals Spawn"]:GetChildren()) do
+			if spawn:IsA("Part") then
+				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+				if (spawn.Position - root.Position).magnitude < dist then
+					move = spawn.Position
+					dir = root.Position
+					break
+				end
+			end
+		end
+		TeamColor(Players.LocalPlayer, {last})
+		if move then
+			local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+			root.CFrame = root.CFrame * CFrame.new(CFrame.new(move, dir).LookVector * 50)
+		end
+	else
+		last = color
+	end
+end)
+
+local antibring = false
+local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
+	local root =  getRoot(char) or char:FindFirstChildOfClass("BasePart") or char:WaitForChild("HumanoidRootPart")
+	local lastpos = root.CFrame
+	repeat
+		if antibring and char then
+			local t = char:FindFirstChildOfClass("Tool")
+			root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+			if t and root then
+				t.Parent = game.Players.LocalPlayer.Backpack			
+				root.CFrame = lastpos
+				local hum = char:FindFirstChildOfClass("Humanoid")
+				if hum then
+					hum:ChangeState(2)
+				end
+			else
+				lastpos = root.CFrame
+			end
+		end
+		RS.RenderStepped:Wait()
+	until not char or not char.Parent
+end)
+
 local loudsound = false
 local function loud()
 	if loudsound then return end
@@ -444,6 +534,9 @@ local function GunKill(players)
 	if type(players) ~= "table" then
 		players = {players}
 	end
+	if 0 > #players then
+		return
+	end
 	local Gun = getGun(Players.LocalPlayer)
 	local args = {
 		[1] = {},
@@ -472,9 +565,15 @@ local function GunKill(players)
 	end
 end
 
+-- I'll comment on these if you're curious
+
+-- This binds a function to the name (<string>name, <function>)
+
 local function BindRender(name, func)
 	table.insert(_G.PLCdata.RenderConnections, {["Name"] = name, ["Connection"] = RS.RenderStepped:Connect(func)})
 end
+
+-- This unbinds the function(s) that have the name (<string>name)
 
 local function UnbindRender(name)
 	for i, connection in pairs(_G.PLCdata.RenderConnections) do
@@ -485,6 +584,16 @@ local function UnbindRender(name)
 	end
 end
 
+-- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
+local function IsRender(name)
+	local counted = 0
+	for i, connection in pairs(_G.PLCdata.RenderConnections) do
+		if connection.Name == name then
+			counted = counted + 1
+		end
+	end
+	return counted > 0, counted
+end
 
 local http = game:GetService("HttpService")
 local fileName = "PLCsave.txt"
@@ -526,6 +635,16 @@ end
 _G.PLCdataunload = function()
 	autore = false
 
+	anticrim = false
+	if anticrimcon then
+		anticrimcon:Disconnect()
+	end
+	
+	antibring = false
+	if antibringcon then
+		antibringcon:Disconnect()
+	end
+	
 	ka = false
 	if kacon then
 		kacon:Disconnect()
@@ -538,7 +657,7 @@ end
 
 local PLC = {
 	["PluginName"] = "Prison admin",
-	["PluginDescription"] = "Commands for prison life, made by matiasbardales",
+	["PluginDescription"] = "Commands for prison life, by McTurtles555 (github)",
 	["Commands"] = {
 		["pfastkill"] = {
 			["Description"] = "Kills a player with gun [plr]", --"(4 SEC COOLDOWN)" not anymore :)
@@ -811,7 +930,6 @@ local PLC = {
 			["Function"] = function(args, speaker)
 				local mul = tonumber(args[1]) or 1
 				local enabled = true
-				local RS = game:GetService("RunService")
 				local mainRemotes = game.ReplicatedStorage
 				local meleeRemote = mainRemotes['meleeEvent']
 				local mouse = game.Players.LocalPlayer:GetMouse()
@@ -926,13 +1044,14 @@ local PLC = {
 				end
 				local function Goto(plr)
 					Char.Humanoid.Sit = false
-					local frame = plr.Character:GetPrimaryPartCFrame()
+					local root = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+					local frame = root.CFrame
 					frame = frame * CFrame.new(0, 5, -2)
 					Char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
 					Char:SetPrimaryPartCFrame(frame)
 				end
-				local function arrest(player)
-					local i = player.Character:FindFirstChild("HumanoidRootPart")
+				local function arrest(plr)
+					local i = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
 					if i then
 						spawn(function()
 							workspace.Remote.arrest:InvokeServer(i)
@@ -943,12 +1062,15 @@ local PLC = {
 					local target = Players[v]
 					local attempts = 0
 					if IsAlive(target) and target then
-						Goto(target)
+						local con = RS.RenderStepped:Connect(function()
+							Goto(target)
+						end)
 						wait(0.3)
 						for i = 1, mul do
 							arrest(target)
 						end
 						wait(0.1)
+						con:Disconnect()
 					end
 				end
 				Char:SetPrimaryPartCFrame(Pos)
@@ -1010,6 +1132,7 @@ local PLC = {
 						local hrp = getRoot(Players.LocalPlayer.Character)
 						attach(Players.LocalPlayer, target)
 						tool.Parent = hrp.Parent
+						hrp.Parent:FindFirstChildOfClass("Humanoid"):ChangeState(2)
 						repeat RS.RenderStepped:Wait()
 						until not getRoot(target.Character) or not current or not current.Parent
 						Respawn(NormPos)
@@ -1055,11 +1178,16 @@ local PLC = {
 			["Description"] = "Runs my anti lag script (effective for armor spam and arrest spam)",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
+				local Quered = {}
+				RS.RenderStepped:Connect(function()
+					for _, part in pairs(Quered) do
+						if part then
+							part:Destroy()
+						end
+					end
+				end)
 				local function Remove(part)
-					spawn(function()
-						RS.RenderStepped:Wait()
-						part:Destroy()
-					end)
+					table.insert(Quered, part)
 				end
 				local function GetCount(group, name)
 					local c = 0
@@ -1144,6 +1272,7 @@ local PLC = {
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local plrs = getPlayer(args[1], speaker)
+				local s = {}
 				for _, v in pairs(plrs) do
 					local plr = game:GetService("Players")[v]
 					local color = tostring(plr.TeamColor)
@@ -1153,8 +1282,9 @@ local PLC = {
 							info = " ("..i[1]..")"
 						end
 					end
-					notify("Player color", v.."'s color is: "..color..info)
+					table.insert(s, v.."'s color is: "..color..info)
 				end
+				notify("Player color"..(#plrs > 1 and "s" or ""), table.concat(s, "\n"))
 			end,
 		},
 		["pfastcar"] = {
@@ -1165,7 +1295,6 @@ local PLC = {
 				local turnspeed = tonumber(args[2])or 2
 				local strength = tonumber(args[3]) or 40000
 				
-				local RS = RS
 				local Char = Players.LocalPlayer.Character
 				local hum = Char:FindFirstChildOfClass("Humanoid")
 				local root = hum.RootPart
@@ -1418,16 +1547,64 @@ local PLC = {
 				end
 			end,
 		},
+		["pspread"] = {
+			["Description"] = "Changes spread of your selected gun. Or all if no gun is held (great = less spread) [spread]",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local spread = tonumber(args[1]) or 0
+				local function modify(gun)
+					local mod = gun:FindFirstChildOfClass("ModuleScript")
+					if mod then
+						local sM = require(mod)
+						sM["Spread"] = spread
+						local interface = gun.GunInterface
+						gun.Parent = Players.LocalPlayer.Backpack
+						interface.Disabled = true
+						RS.Heartbeat:Wait()
+						interface.Disabled = false
+					end
+				end
+				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+				if gun then
+					modify(gun)
+				else
+					for _, v in pairs(Players.LocalPlayer.Backpack:GetChildren()) do
+						modify(v)
+					end
+				end
+			end,
+		},
+		["prange"] = {
+			["Description"] = "Changes range of your selected gun. Or all if no gun is held (defaults to 2480) [range]",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local range = tonumber(args[1]) or 2480
+				local function modify(gun)
+					local mod = gun:FindFirstChildOfClass("ModuleScript")
+					if mod then
+						local sM = require(mod)
+						sM["Range"] = range
+						local interface = gun.GunInterface
+						gun.Parent = Players.LocalPlayer.Backpack
+						interface.Disabled = true
+						RS.Heartbeat:Wait()
+						interface.Disabled = false
+					end
+				end
+				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+				if gun then
+					modify(gun)
+				else
+					for _, v in pairs(Players.LocalPlayer.Backpack:GetChildren()) do
+						modify(v)
+					end
+				end
+			end,
+		},
 		["pnoreloadtime"] = {
 			["Description"] = "Mods your selected gun to have fast reload. Or all if no gun is held",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
-				local rate = tonumber(args[1]) or 0
-				local amount = tonumber(args[2]) or 1
-				local auto = true
-				if args[3] and args[3]:lower() == "n" then
-					auto = false
-				end
 				local function modify(gun)
 					local mod = gun:FindFirstChildOfClass("ModuleScript")
 					if mod then
@@ -1532,7 +1709,9 @@ local PLC = {
 			["Function"] = function(args, speaker)
 				local targets = getPlayer(args[1], speaker)
 				for _, plr in pairs(targets) do
-					table.insert(_G.PLCdata.admin.admins, #_G.PLCdata.admin.admins+1, plr)
+					if not table.find(_G.PLCdata.admin.admins, plr) then
+						table.insert(_G.PLCdata.admin.admins, plr)
+					end
 				end
 			end,
 		},
@@ -1782,6 +1961,14 @@ local PLC = {
 					local target = Players[v]
 					local name = "GIVE_VIRUS_"..target.Name
 					local processing = {}
+					local function find(v)
+						for _, i in pairs(processing) do
+							if i[1] == v then
+								return true
+							end
+						end
+						return
+					end
 					UnbindRender(name)
 					BindRender(name, function()
 						if not target then
@@ -1789,15 +1976,22 @@ local PLC = {
 						end
 						if not cooldown and target.Character then
 							for _, plr in pairs(Players:GetPlayers()) do
-								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target, 3) and plr ~= target and plr ~= Players.LocalPlayer and not table.find(processing, plr.Character) then
+								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target, 3) and plr ~= target and plr ~= Players.LocalPlayer and not find(plr.Character) then
 									cooldown = true
-									table.insert(processing, plr.Character)
+									table.insert(processing, {plr.Character, os.clock() + 2})
 									GunKill(plr.Name)
 									wait(0.1)
 									cooldown = false
 								end
 							end
 						end
+						local new = data
+						for i, data in pairs(processing) do
+							if data[2] < os.clock() then
+								new[i] = nil
+							end
+						end
+						data = new
 					end)
 				end
 			end,
@@ -1824,6 +2018,14 @@ local PLC = {
 					local target = Players[v]
 					local name = "GIVE_KILL_ARUA_"..target.Name
 					local processing = {}
+					local function find(v)
+						for _, i in pairs(processing) do
+							if i[1] == v then
+								return true
+							end
+						end
+						return
+					end
 					UnbindRender(name)
 					BindRender(name, function()
 						if not target then
@@ -1831,15 +2033,22 @@ local PLC = {
 						end
 						if not cooldown and target.Character then
 							for _, plr in pairs(Players:GetPlayers()) do
-								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target) and plr ~= target and plr ~= Players.LocalPlayer and not table.find(processing, plr.Character) then
+								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target) and plr ~= target and plr ~= Players.LocalPlayer and not find(plr.Character) then
 									cooldown = true
-									table.insert(processing, plr.Character)
+									table.insert(processing, {plr.Character, os.clock() + 2})
 									GunKill(plr.Name)
 									wait(0.1)
 									cooldown = false
 								end
 							end
 						end
+						local new = data
+						for i, data in pairs(processing) do
+							if data[2] < os.clock() then
+								new[i] = nil
+							end
+						end
+						data = new
 					end)
 				end
 			end,
@@ -1911,6 +2120,57 @@ local PLC = {
 					end
 				else
 					notify("Couldent give/get key", "Took too long to switch to cops team, or its full")
+				end
+			end,
+		},
+		["pclickkill"] = {
+			["Description"] = "Get a click to kill tool",
+			["Aliases"] = {"pck"},
+			["Function"] = function(args, speaker)
+				local CK = Instance.new("Tool", Players.LocalPlayer.Backpack)
+				CK.Name = "CK"
+				CK.RequiresHandle = false
+				CK.Equipped:Connect(function(mouse)
+					mouse.Button1Down:Connect(function()
+						local target = mouse.Target
+						local char = target.Parent
+						local plr = Players:GetPlayerFromCharacter(char) or Players:GetPlayerFromCharacter(char.Parent)
+						if plr then
+							GunKill(plr.Name)
+						end
+					end)
+				end)
+			end,
+		},
+		["panticrim"] = {
+			["Description"] = "Prevents you form becomeing a criminal",
+			["Aliases"] = {"pnocrim"},
+			["Function"] = function(args, speaker)
+				local arg = args[1]:lower()
+				if arg == "on" then
+					anticrim = true
+					notify("Enabled", "Anti-crim was turned on (Server will make you crim if you're inmate and escaped)")
+				elseif arg == "off" then
+					anticrim = false
+					notify("Disabled", "Anti-crim was turned off")
+				else
+					notify("Invalid", "Invalid argument. Do 'on/off'")
+				end
+			end,
+		},
+		["pantibring"] = {
+			["Description"] = "Prevents bring people from bringing you",
+			["Aliases"] = {"pnobring"},
+			["Function"] = function(args, speaker)
+				local arg = args[1]:lower()
+				if arg == "on" then
+					antibring = true
+					notify("Enabled", "Anti-bring was turned on")
+				elseif arg == "off" then
+					antibring = false
+					notify("Disabled", "Anti-bring was turned off")
+				else
+					notify("Invalid", "Invalid argument. Do 'on/off'")
 				end
 			end,
 		},
@@ -2114,17 +2374,22 @@ if not isPL then
 			PLC.Commands[i] = nil
 		end
 	end
-	PLC.Commands["Not_prison_life!"] = {
-		["Description"] = "This game isent prison life and only all game comands are added",
+	local info = "This game isen't prison life and only all game comands are added"
+	PLC.Commands["PLCREADME"] = {
+		["Description"] = info,
 		["Aliases"] = {},
 		["Function"] = function()
-			notify("Notification", "Read the description")
+			notify("Notification", info)
 		end
 	}
 end
 
 local replace = _G.PLCdata.cmdreplace
-for name, data in pairs(cmds) do
+local copy = {}
+for n, d in pairs(PLC["Commands"]) do
+	copy[n] = d
+end
+for name, data in pairs(copy) do
 	if replace[name] then
 		local func = data["Function"]
 		local desc = data["Description"]
@@ -2139,4 +2404,47 @@ for name, data in pairs(cmds) do
 	end
 end
 
+if isPL then 
+	local found = workspace:FindFirstChild("PLC - antifall")
+	if found then
+		found:Destroy()
+	end
+	local antifall = Instance.new("Model", workspace)
+	antifall.Name = "PLC - antifall"
+	local platform = Instance.new("Part", antifall)
+	platform.Anchored = true
+	platform.CFrame = CFrame.new(-128, -165, 2048)
+	platform.Size = Vector3.new(39, 1, 34)
+	platform.Name = "platform"
+	local stand = Instance.new("Part", antifall)
+	stand.Anchored = true
+	stand.CFrame = CFrame.new(-128, -163, 2032)
+	stand.Size = Vector3.new(2, 3, 2)
+	stand.Name = "stand"
+	local stand2 = Instance.new("WedgePart", antifall)
+	stand2.Anchored = true
+	stand2.CFrame = CFrame.new(-128, -161, 2032) * CFrame.Angles(0, math.rad(180), 0)
+	stand2.Size = Vector3.new(2, 1, 2)
+	stand2.Name = "stand2"
+	local button = Instance.new("Part", antifall)
+	button.Anchored = true
+	button.CFrame = CFrame.new(-128, -161.1, 2032) * CFrame.Angles(math.rad(22.5), math.rad(-90), 0)
+	button.Size = Vector3.new(1.6, 0.4, 1.6)
+	button.BrickColor = BrickColor.new("Bright red")
+	button.Name = "button"
+	local UI = Instance.new("SurfaceGui", button)
+	UI.Adornee = button
+	UI.Face = "Top"
+	local label = Instance.new("TextLabel", UI)
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextScaled = true
+	label.Text = "Click to goto nexus"
+	local CD = Instance.new("ClickDetector", button)
+	CD.MouseClick:Connect(function()
+		local char = Players.LocalPlayer.Character
+		local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+		root.CFrame = CFrame.new(921, 100, 2374)
+	end)
+end
 return PLC
