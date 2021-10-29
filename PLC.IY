@@ -7,17 +7,21 @@
 
 _G.PLCdata = {} -- DO NOT REMOVE
 
+_G.PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
+
 _G.PLCdata.admin = {} -- DO NOT REMOVE
 _G.PLCdata.admin.everyone = false -- If you want everyone to be admin
 _G.PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
-	"epicgamer",
-	"epicgamerII"
+	"dockboathelper",
+	"Minecraft135946"
 }
 _G.PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
-	"bigboss"
+	"jakemlg360",
+	"YoungDiego23",
+	"matiasbardales"
 }
 _G.PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
-	"notepicgamer"
+	
 }
 
 _G.PLCdata.admin.prefix = ":" -- The give admin prefix
@@ -127,6 +131,14 @@ _G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Name"] = "modgun",
 		["Aliases"] = {}
 	},
+	["pspread"] = {
+		["Name"] = "gunspread",
+		["Aliases"] = {"spread"}
+	},
+	["prange"] = {
+		["Name"] = "gunrange",
+		["Aliases"] = {"range"}
+	},
 	["pnoreloadtime"] = {
 		["Name"] = "noreloadtime",
 		["Aliases"] = {"fastreload", "fastr"}
@@ -206,6 +218,18 @@ _G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 	["pkey"] = {
 		["Name"] = "key",
 		["Aliases"] = {}
+	},
+	["pclickkill"] = {
+		["Name"] = "clickkill",
+		["Aliases"] = {"ck"}
+	},
+	["panticrim"] = {
+		["Name"] = "anticrim",
+		["Aliases"] = {"nocrim"}
+	},
+	["pantibring"] = {
+		["Name"] = "antibring",
+		["Aliases"] = {"nobring"}
 	},
 }
 
