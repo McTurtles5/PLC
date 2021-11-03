@@ -1,9 +1,4 @@
---//How to use\--
-
--- DOWNLOADING
--- 1: Get Infinite Yield if you don't have it
--- 2: Put this file in the workspace folder of your executor and rename it as "PLC.IY" to make it "PLC" and type "IY"
--- 3: Type "addplugin PLC" on Infinite Yield, then enter
+-- I'd reccomend useing Downloader.txt
 
 _G.PLCdata = {} -- DO NOT REMOVE
 
@@ -12,16 +7,14 @@ _G.PLCdata.fastbring = false -- If you want fastbring or normal bring (I recomme
 _G.PLCdata.admin = {} -- DO NOT REMOVE
 _G.PLCdata.admin.everyone = false -- If you want everyone to be admin
 _G.PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
-	"dockboathelper",
-	"Minecraft135946"
+	"gamer",
+	"gamerII",
 }
 _G.PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
-	"jakemlg360",
-	"YoungDiego23",
-	"matiasbardales"
+	"Epicgamer",
 }
 _G.PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
-	
+	"annoyingnoob",
 }
 
 _G.PLCdata.admin.prefix = ":" -- The give admin prefix
@@ -117,6 +110,22 @@ _G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 	},
 	["pdeletloadout"] = {
 		["Name"] = "deletloadout",
+		["Aliases"] = {}
+	},
+	["ploadgunmod"] = {
+		["Name"] = "loadgunmod",
+		["Aliases"] = {"loadmod"}
+	},
+	["pgunwithgunmod"] = {
+		["Name"] = "gunwithgunmod",
+		["Aliases"] = {"gunwithgunmod", "loadgunwithgunmod", "gunwmod"}
+	},
+	["psavegunmod"] = {
+		["Name"] = "savegunmod",
+		["Aliases"] = {}
+	},
+	["pdeletgunmod"] = {
+		["Name"] = "deletgunmod",
 		["Aliases"] = {}
 	},
 	["pfixfade"] = {
