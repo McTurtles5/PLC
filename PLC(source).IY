@@ -6,6 +6,7 @@
 
 _G.PLCdata.RenderConnections = _G.PLCdata.RenderConnections or {}
 _G.PLCdata.lastloadout = nil
+_G.PLCdata.lastgunmod = nil
 _G.PLCdata.loadout = { -- Your loadout
 	[1] = "M9";
 	[2] = 0;
@@ -42,6 +43,16 @@ local possibleTeams = {
 	{"Inmates", "Bright orange"},
 	{"Criminals", "Really red"},
 	{"Neutral", "Medium stone grey"},
+}
+
+local possibleItems = {
+	"M9",
+	"AK-47",
+	"Crude Knife",
+	"Hammer",
+	"Remington 870",
+	"M4A1",
+	"Key card",
 }
 
 local function Sound(snd, p)
@@ -483,6 +494,8 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 end)
 
 local antibring = false
+local whitelisted = nil
+local lastbackpack = {}
 local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local root =  getRoot(char) or char:FindFirstChildOfClass("BasePart") or char:WaitForChild("HumanoidRootPart")
 	local lastpos = root.CFrame
@@ -490,7 +503,14 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 		if antibring and char then
 			local t = char:FindFirstChildOfClass("Tool")
 			root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
-			if t and root then
+			for _, v in pairs(lastbackpack) do
+				if t == v and v:IsA("Tool") then
+					whitelisted = v
+					break
+				end
+			end
+			lastbackpack = Players.LocalPlayer.Backpack:GetChildren()
+			if t and root and t ~= whitelisted then
 				t.Parent = game.Players.LocalPlayer.Backpack			
 				root.CFrame = lastpos
 				local hum = char:FindFirstChildOfClass("Humanoid")
@@ -565,6 +585,21 @@ local function GunKill(players)
 	end
 end
 
+local function savemod(gun, type, value)
+	local mod = gun:FindFirstChild("GunStates")
+	local data = require(mod)
+	if not data["PLCModifications"] then
+		data["PLCModifications"] = {
+			["Firerate"] = "N",
+			["BulletAmount"] = "N",
+			["Spread"] = "N",
+			["Range"] = "N",
+			["NoReloadtime"] = false
+		}
+	end
+	data["PLCModifications"][type] = value
+end
+
 -- I'll comment on these if you're curious
 
 -- This binds a function to the name (<string>name, <function>)
@@ -599,6 +634,7 @@ local http = game:GetService("HttpService")
 local fileName = "PLCsave.txt"
 local structure = {
 	["Loadouts"] = {},
+	["Gunmods"] = {},
 	["Admins"] = {},
 }
 
@@ -763,15 +799,6 @@ local PLC = {
 			["Description"] = "Gives you a prison item [item]",
 			["Aliases"] = {"pgun", "pequip", "pg"},
 			["Function"] = function(args, speaker)
-				local possibleItems = {
-					"M9",
-					"AK-47",
-					"Crude Knife",
-					"Hammer",
-					"Remington 870",
-					"M4A1",
-					"Key card",
-				}
 				local remote = workspace.Remote.ItemHandler
 				local folder = workspace.Prison_ITEMS
 				local input = table.concat(args, " ")
@@ -1460,6 +1487,196 @@ local PLC = {
 				_G.PLCdata.lastloadout = loadname
 			end,
 		},
+		["ploadgunmod"] = {
+			["Description"] = "Gives you your gun mod [name]",
+			["Aliases"] = {"ploadmod"},
+			["Function"] = function(args, speaker)
+				local name = string.lower(table.concat(args, " "))
+				if name == "" then name = _G.PLCdata.lastgunmod end
+				formatFile()
+				local data = JSONload()
+				local found = data["Gunmods"][name]
+				if not found then
+					notify("Invalid", "Please enter a valid gunmod name")
+					return
+				end
+				local current = Players.LocalPlayer.Character
+				local function modify(gun)
+					local mod = gun:FindFirstChildOfClass("ModuleScript")
+					if mod then
+						local sM = require(mod)
+						if found["Firerate"] ~= "N" then
+							savemod(gun, "Firerate", found["Firerate"])
+							sM["FireRate"] = found["Firerate"]
+						end
+						if found["BulletAmount"] ~= "N" then
+							savemod(gun, "BulletAmount", found["BulletAmount"])
+							sM["Bullets"] = found["BulletAmount"]
+						end
+						if found["Spread"] ~= "N" then
+							savemod(gun, "Spread", found["Spread"])
+							sM["Spread"] = found["Spread"]
+						end
+						if found["Range"] ~= "N" then
+							savemod(gun, "Range", found["Range"])
+							sM["Range"] = found["Range"]
+						end
+						if found["Auto"] ~= "N" then
+							savemod(gun, "Auto", found["Auto"])
+							sM["AutoFire"] = found["Auto"]
+						end
+						if found["NoReloadtime"] then
+							savemod(gun, "NoReloadtime", true)
+							sM["ReloadTime"] = 0
+						end
+						local interface = gun.GunInterface
+						gun.Parent = Players.LocalPlayer.Backpack
+						interface.Disabled = true
+						RS.Heartbeat:Wait()
+						interface.Disabled = false
+					end
+				end
+				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+				if gun then
+					modify(gun)
+				else
+					for _, v in pairs(Players.LocalPlayer.Backpack:GetChildren()) do
+						modify(v)
+					end
+				end
+				_G.PLCdata.lastgunmod = name
+			end,
+		},
+		["pgunwithgunmod"] = {
+			["Description"] = "Gives you a gun with the gun mod applied [gun] [name]",
+			["Aliases"] = {"ploadgunwithgunmod", "pgunwmod"},
+			["Function"] = function(args, speaker)
+				local name = string.lower(table.concat(args, " ", 2))
+				if name == "" then name = _G.PLCdata.lastgunmod end
+				formatFile()
+				local data = JSONload()
+				local found = data["Gunmods"][name]
+				if not found then
+					notify("Invalid", "Please enter a valid gunmod name")
+					return
+				end
+				local input = args[1]
+				local item = nil
+				for _, f in pairs(possibleItems) do
+					if string.sub(f:lower(), 1, input:len()) == input:lower() then
+						item = f
+					end
+				end
+				local succsses = false
+				local remote = workspace.Remote.ItemHandler
+				local folder = workspace.Prison_ITEMS
+				for _, sec in pairs(folder:GetChildren()) do
+					local found = sec:FindFirstChild(item)
+					if found then
+						local pickup = found:FindFirstChild("ITEMPICKUP")
+						if pickup then
+							remote:InvokeServer(pickup)
+							succsses = true
+							break
+						else
+							notify("Cant pick up", "Couldent pick up "..item)
+							succsses = true
+							break
+						end
+					end
+				end
+				if not succsses then
+					notify("Cant find", "Couldent find "..item)
+					return
+				end
+				local current = Players.LocalPlayer.Character
+				local gun = Players.LocalPlayer.Backpack:FindFirstChild(item)
+				local mod = gun:FindFirstChild("GunStates")
+				if mod then
+					local sM = require(mod)
+					if found["Firerate"] ~= "N" then
+						savemod(gun, "Firerate", found["Firerate"])
+						sM["FireRate"] = found["Firerate"]
+					end
+					if found["BulletAmount"] ~= "N" then
+						savemod(gun, "BulletAmount", found["BulletAmount"])
+						sM["Bullets"] = found["BulletAmount"]
+					end
+					if found["Spread"] ~= "N" then
+						savemod(gun, "Spread", found["Spread"])
+						sM["Spread"] = found["Spread"]
+					end
+					if found["Range"] ~= "N" then
+						savemod(gun, "Range", found["Range"])
+						sM["Range"] = found["Range"]
+					end
+					if found["Auto"] ~= "N" then
+						savemod(gun, "Auto", found["Auto"])
+						sM["AutoFire"] = found["Auto"]
+					end
+					if found["NoReloadtime"] then
+						savemod(gun, "NoReloadtime", found["NoReloadtime"])
+						sM["ReloadTime"] = found["NoReloadtime"]
+					end
+					local interface = gun.GunInterface
+					gun.Parent = Players.LocalPlayer.Backpack
+					interface.Disabled = true
+					RS.Heartbeat:Wait()
+					interface.Disabled = false
+				end
+				_G.PLCdata.lastgunmod = name
+			end,
+		},
+		["psavegunmod"] = {
+			["Description"] = "Save this custom gun mod (HOLD GUN) [name]",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local name = table.concat(args, " ")
+				if name == "" then name = _G.PLCdata.lastgunmod end
+				if not name then
+					notify("Invalid", "Please enter a gunmod name")
+					return
+				end
+				local current = Players.LocalPlayer.Character
+				local gun = current:FindFirstChildOfClass("Tool")
+				if not gun then
+					notify("Invalid", "Please hold out your gun")
+					return
+				end
+				local sM = gun:FindFirstChild("GunStates")
+				if sM then
+					name = name:lower()
+					formatFile()
+					local data = JSONload()
+					local t = require(sM)["PLCModifications"]
+					data.Gunmods[name] = t
+					JSONsave(data)
+					notify("Saved", "Saved your gunmod to "..name)
+					_G.PLCdata.lastgunmod = name
+				else
+					notify("Invalid", "This gun doesn't have modifications. Or it's not a gun")
+				end
+			end,
+		},
+		["pdeletgunmod"] = {
+			["Description"] = "Delets this custom gun mod [name]",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local name = table.concat(args, " ")
+				if name == "" then name = _G.PLCdata.lastgunmod end
+				if not name then
+					notify("Invalid", "Please enter a gunmod name")
+					return
+				end
+				name = name:lower()
+				formatFile()
+				local data = JSONload()
+				data.Gunmods[name] = nil
+				JSONsave(data)
+				notify("Removed", "Removed the gunmod "..name)
+				_G.PLCdata.lastgunmod = name
+			end,
+		},
 		["pfixfade"] = {
 			["Description"] = "Fixes the fadeing screen and makes it transparent",
 			["Aliases"] = {"prestorefade"},
@@ -1534,8 +1751,10 @@ local PLC = {
 						sM["FireRate"] = rate
 						sM["AutoFire"] = auto
 						sM["Bullets"] = amount
-						sM["Range"] = 2048
 					end
+					savemod(gun, "Firerate", rate)
+					savemod(gun, "Auto", auto)
+					savemod(gun, "BulletAmount", amount)
 				end
 				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
 				if gun then
@@ -1562,6 +1781,7 @@ local PLC = {
 						interface.Disabled = true
 						RS.Heartbeat:Wait()
 						interface.Disabled = false
+						savemod(gun, "Spread", spread)
 					end
 				end
 				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
@@ -1589,6 +1809,7 @@ local PLC = {
 						interface.Disabled = true
 						RS.Heartbeat:Wait()
 						interface.Disabled = false
+						savemod(gun, "Range", range)
 					end
 				end
 				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
@@ -1610,6 +1831,7 @@ local PLC = {
 					if mod then
 						local sM = require(mod)
 						sM["ReloadTime"] = 0
+						savemod(gun, "NoReloadtime", true)
 					end
 				end
 				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
@@ -1836,26 +2058,22 @@ local PLC = {
 				if seat then
 					local car = seat.Parent.Parent
 					if car then
-						car:WaitForChild("Body"):WaitForChild("VehicleSeat"):WaitForChild("ReadyToSpawn")
 						local wheels = car.Wheels
 						local root = getRoot(Players.LocalPlayer.Character)
 						local current = root.CFrame
 						car.PrimaryPart = car.Body.Main
-						car:SetPrimaryPartCFrame(void * CFrame.new(0, 10, 0))
-						for _, wheel in pairs(wheels:GetChildren()) do
-							wheel.CFrame = void * CFrame.new(0, 10, 0)
-							wheel.Anchored = true
-						end
-						wait(0.1)
-						for _, wheel in pairs(wheels:GetChildren()) do
-								wheel.Anchored = false
-						end
+						local delet = Instance.new("BodyPosition", car.PrimaryPart)
+						delet.Position = (void * CFrame.new(0, 500, 0)).Position
+						delet.MaxForce = Vector3.new("inf", "inf", "inf")
+						wait(1)
 						hum.Sit = false
-						root.CFrame = current
-						for _ = 1, 120 do
+						delet:Destroy()
+						local CT = os.clock() + 0.4
+						while CT > os.clock() do
 							RS.RenderStepped:Wait()
 							hum.Sit = false
 							root.CFrame = current
+							root.Velocity = Vector3.new(0, 0, 0)
 							if not seat or seat.Parent == nil then
 								break
 							end
@@ -2174,7 +2392,47 @@ local PLC = {
 				end
 			end,
 		},
+		--TEMP REMOVE
 
+
+
+
+
+
+
+
+
+
+
+
+
+		["pclickcrim"] = {
+			["Description"] = "Prevents bring people from bringing you",
+			["Aliases"] = {"pnobring"},
+			["Function"] = function(args, speaker)
+				local function Touch(x, Root) -- IY touch function
+				if firetouchinterest then
+						return spawn(function()
+							firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
+						end)
+					else
+						notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is need to touch the criminal pad")
+					end
+					x.CFrame = Root.CFrame
+				end
+
+				local CK = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
+				CK.Name = "CK"
+				CK.RequiresHandle = false
+				CK.Equipped:Connect(function(mouse)
+					mouse.Button1Down:Connect(function()
+						local target = mouse.Target
+							Touch(workspace["Criminals Spawn"].SpawnLocation, target)
+					end)
+				end)
+			end,
+		},
+			
 	},
 }
 
@@ -2275,6 +2533,7 @@ local function Added(plr)
 					Run("pkill", args, plr)
 				elseif command == "arrest" then
 					Run("parrest", args, plr)
+					args[2] = math.clamp(tonumber(args[2]) or 1, 0, 1000)
 				elseif command == "virus" then
 					Run("pvirus", args, plr)
 				elseif command == "unvirus" then
@@ -2404,7 +2663,8 @@ for name, data in pairs(copy) do
 	end
 end
 
-if isPL then 
+if isPL then
+	local hieght = -165
 	local found = workspace:FindFirstChild("PLC - antifall")
 	if found then
 		found:Destroy()
@@ -2413,22 +2673,22 @@ if isPL then
 	antifall.Name = "PLC - antifall"
 	local platform = Instance.new("Part", antifall)
 	platform.Anchored = true
-	platform.CFrame = CFrame.new(-128, -165, 2048)
+	platform.CFrame = CFrame.new(-128, 0 + hieght, 2048)
 	platform.Size = Vector3.new(39, 1, 34)
 	platform.Name = "platform"
 	local stand = Instance.new("Part", antifall)
 	stand.Anchored = true
-	stand.CFrame = CFrame.new(-128, -163, 2032)
+	stand.CFrame = CFrame.new(-128, 2 + hieght, 2032)
 	stand.Size = Vector3.new(2, 3, 2)
 	stand.Name = "stand"
 	local stand2 = Instance.new("WedgePart", antifall)
 	stand2.Anchored = true
-	stand2.CFrame = CFrame.new(-128, -161, 2032) * CFrame.Angles(0, math.rad(180), 0)
+	stand2.CFrame = CFrame.new(-128, 4 + hieght, 2032) * CFrame.Angles(0, math.rad(180), 0)
 	stand2.Size = Vector3.new(2, 1, 2)
 	stand2.Name = "stand2"
 	local button = Instance.new("Part", antifall)
 	button.Anchored = true
-	button.CFrame = CFrame.new(-128, -161.1, 2032) * CFrame.Angles(math.rad(22.5), math.rad(-90), 0)
+	button.CFrame = CFrame.new(-128, 4.1 + hieght, 2032) * CFrame.Angles(math.rad(22.5), math.rad(-90), 0)
 	button.Size = Vector3.new(1.6, 0.4, 1.6)
 	button.BrickColor = BrickColor.new("Bright red")
 	button.Name = "button"
@@ -2447,4 +2707,5 @@ if isPL then
 		root.CFrame = CFrame.new(921, 100, 2374)
 	end)
 end
+
 return PLC
