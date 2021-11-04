@@ -24,6 +24,14 @@ _G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Name"] = "k",
 		["Aliases"] = {}
 	},
+	["ploopkill"] = {
+		["Name"] = "loopkill",
+		["Aliases"] = {"lk"}
+	},
+	["punloopkill"] = {
+		["Name"] = "unloopkill",
+		["Aliases"] = {"unlk"}
+	},
 	["pkill"] = {
 		["Name"] = "tk",
 		["Aliases"] = {"tkill"}
