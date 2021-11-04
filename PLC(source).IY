@@ -693,13 +693,50 @@ end
 
 local PLC = {
 	["PluginName"] = "Prison admin",
-	["PluginDescription"] = "Commands for prison life, by McTurtles555 (github)",
+	["PluginDescription"] = "Commands for prison life, by McTurtles5 (github)",
 	["Commands"] = {
 		["pfastkill"] = {
 			["Description"] = "Kills a player with gun [plr]", --"(4 SEC COOLDOWN)" not anymore :)
 			["Aliases"] = {"pfk"},
 			["Function"] = function(args, speaker)
 				GunKill(getPlayer(args[1], speaker))
+			end,
+		},
+		["ploopkill"] = {
+			["Description"] = "Loop kills a player with gun [plr]",
+			["Aliases"] = {"plk"},
+			["Function"] = function(args, speaker)
+				local targets = getPlayer(args[1], speaker)
+				for _, v in pairs(targets) do
+					local target = Players[v]
+					local name = "LOOP_KILL_"..target.Name
+					local processing = nil
+					local time = os.clock() + 2
+					UnbindRender(name)
+					BindRender(name, function()
+						if not target then
+							UnbindRender(name)
+						end
+						if processing ~= target.Character or time < os.clock() then
+							if IsAlive(target) and IsVulnerable(target) then
+								GunKill({target.Name})
+								processing = target.Character
+								time = os.clock() + 2
+							end
+						end
+					end)
+				end
+			end,
+		},
+		["punloopkill"] = {
+			["Description"] = "Unloop kills a player [plr]",
+			["Aliases"] = {"punlk"},
+			["Function"] = function(args, speaker)
+				local targets = getPlayer(args[1], speaker)
+				for _, v in pairs(targets) do
+					local name = "LOOP_KILL_"..v
+					UnbindRender(name)
+				end
 			end,
 		},
 		["pkill"] = {
@@ -1206,12 +1243,13 @@ local PLC = {
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local Quered = {}
-				RS.RenderStepped:Connect(function()
+				RS.Stepped:Connect(function()
 					for _, part in pairs(Quered) do
 						if part then
 							part:Destroy()
 						end
 					end
+					Quered = {}
 				end)
 				local function Remove(part)
 					table.insert(Quered, part)
@@ -2175,7 +2213,6 @@ local PLC = {
 			["Function"] = function(args, speaker)
 				local targets = getPlayer(args[1], speaker)
 				for _, v in ipairs(targets) do
-					local cooldown = false
 					local target = Players[v]
 					local name = "GIVE_VIRUS_"..target.Name
 					local processing = {}
@@ -2195,16 +2232,16 @@ local PLC = {
 						if not cooldown and target.Character then
 							for _, plr in pairs(Players:GetPlayers()) do
 								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target, 3) and plr ~= target and plr ~= Players.LocalPlayer and not find(plr.Character) then
-									cooldown = true
 									table.insert(processing, {plr.Character, os.clock() + 2})
 									GunKill(plr.Name)
-									wait(0.1)
-									cooldown = false
 								end
 							end
 						end
 						local new = data
 						for i, data in pairs(processing) do
+							if not data then
+								return
+							end
 							if data[2] < os.clock() then
 								new[i] = nil
 							end
@@ -2232,7 +2269,6 @@ local PLC = {
 			["Function"] = function(args, speaker)
 				local targets = getPlayer(args[1], speaker)
 				for _, v in ipairs(targets) do
-					local cooldown = false
 					local target = Players[v]
 					local name = "GIVE_KILL_ARUA_"..target.Name
 					local processing = {}
@@ -2252,16 +2288,16 @@ local PLC = {
 						if not cooldown and target.Character then
 							for _, plr in pairs(Players:GetPlayers()) do
 								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target) and plr ~= target and plr ~= Players.LocalPlayer and not find(plr.Character) then
-									cooldown = true
 									table.insert(processing, {plr.Character, os.clock() + 2})
 									GunKill(plr.Name)
-									wait(0.1)
-									cooldown = false
 								end
 							end
 						end
 						local new = data
 						for i, data in pairs(processing) do
+							if not data then
+								return
+							end
 							if data[2] < os.clock() then
 								new[i] = nil
 							end
