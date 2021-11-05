@@ -1,5 +1,3 @@
---//How to use\\--
-
 -- This isen't the correct file by the way
 
 -- Don't scroll too fast or page could comit die
@@ -438,18 +436,6 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 	end
 end
 
-local webhookcheck=is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
-KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/905946241064644689/wo-F0lAAQGuZ9cJet3MpkwoNZd61nx8Q5kFTRaLtMlvD0IGROy9vhiw1fcSJVx9DrWOC"
-local data = {["content"]="yey!",["embeds"]={{["title"] = "**Someone Used PLC!!!!!!**",
-["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**",["type"] = "rich",
-["color"] = tonumber(0x7269da),["image"]={["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)}}}}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {["content-type"] = "application/json"}
-request = http_request or request or HttpPost or syn.request
-local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-request(abcdef)
-
 local autore = false
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local hum = char:WaitForChild("Humanoid")
@@ -537,26 +523,6 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	until not char or not char.Parent
 end)
 
-local loudsound = false
-local function loud()
-	if loudsound then return end
-	loudsound = true
-	local s = workspace["Prison_guardspawn"].spawn.Sound
-	spawn(function()
-		repeat wait()
-			for _, p in pairs(Players:GetPlayers()) do
-				local c = p.Character
-				if c then
-					local head = c:FindFirstChild("Head") or c:FindFirstChildOfClass("BasePart")
-					if head then
-						Sound(s, head)
-					end
-				end
-			end
-		until not loudsound
-	end)
-end
-
 local function HasItem(name, plr)
 	local found = plr.Backpack:FindFirstChild(name) or plr.Character:FindFirstChild(name)
 	return found
@@ -595,6 +561,34 @@ local function GunKill(players)
 		game:GetService("ReplicatedStorage").ShootEvent:FireServer(unpack(args))
 		game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Gun)
 	end
+end
+
+local loopkillprocess = {}
+local loopkillcon = RS.RenderStepped:Connect(function()
+	if #loopkillprocess > 0 then
+		GunKill(loopkillprocess)
+		loopkillprocess = {}
+	end
+end)
+
+local loudsound = false
+local function loud()
+	if loudsound then return end
+	loudsound = true
+	local s = workspace["Prison_guardspawn"].spawn.Sound
+	spawn(function()
+		repeat wait()
+			for _, p in pairs(Players:GetPlayers()) do
+				local c = p.Character
+				if c then
+					local head = c:FindFirstChild("Head") or c:FindFirstChildOfClass("BasePart")
+					if head then
+						Sound(s, head)
+					end
+				end
+			end
+		until not loudsound
+	end)
 end
 
 local function savemod(gun, type, value)
@@ -698,6 +692,11 @@ _G.PLCdataunload = function()
 		kacon:Disconnect()
 	end
 
+	loopkillprocessing = {}
+	if loopkillcon then
+		loopkillcon:Disconnect()
+	end
+
 	loudsound = false
 
 	warn("The previous PLC was unloaded, turning off all toggles")
@@ -731,7 +730,7 @@ local PLC = {
 						end
 						if processing ~= target.Character or time < os.clock() then
 							if IsAlive(target) and IsVulnerable(target) then
-								GunKill({target.Name})
+								table.insert(loopkillprocess, target.Name)
 								processing = target.Character
 								time = os.clock() + 2
 							end
