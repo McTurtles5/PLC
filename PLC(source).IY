@@ -429,7 +429,6 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 		until not plr.Character or not target.Character or elapsedTime() > WT or passedTool
 		Respawn(current)
 
-
 		end
 	else
 		notify("Can't teleport", "Target is nil/dead/sitting")
@@ -437,7 +436,7 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 end
 
 local autore = false
-Players.LocalPlayer.CharacterAdded:Connect(function(char)
+local autorecon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local hum = char:WaitForChild("Humanoid")
 	hum.Died:Connect(function()
 		if autore then
@@ -509,12 +508,21 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 			end
 			lastbackpack = Players.LocalPlayer.Backpack:GetChildren()
 			if t and root and t ~= whitelisted then
-				t.Parent = game.Players.LocalPlayer.Backpack			
+				t.Parent = game.Players.LocalPlayer.Backpack
+				local current = root.CFrame			
 				root.CFrame = lastpos
 				local hum = char:FindFirstChildOfClass("Humanoid")
 				if hum then
 					hum:ChangeState(2)
 				end
+				local pos = Vector3.new(
+					math.floor(current.Position.X + 0.5),
+					math.floor(current.Position.Y + 0.5),
+					math.floor(current.Position.Z + 0.5)
+				)
+				
+				local extra = ((root.CFrame.Position - pos).magnitude > 10 and "\n("..tostring(pos)..")") or ""
+				notify("Bring blocked", "Anti-bring prevented a bring"..extra)
 			else
 				lastpos = root.CFrame
 			end
@@ -564,7 +572,7 @@ local function GunKill(players)
 end
 
 local loopkillprocess = {}
-local loopkillcon = RS.RenderStepped:Connect(function()
+local loopkillcon = RS.Heartbeat:Connect(function()
 	if #loopkillprocess > 0 then
 		GunKill(loopkillprocess)
 		loopkillprocess = {}
@@ -590,34 +598,6 @@ local function loud()
 		until not loudsound
 	end)
 end
-
-local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/905946241064644689/wo-F0lAAQGuZ9cJet3MpkwoNZd61nx8Q5kFTRaLtMlvD0IGROy9vhiw1fcSJVx9DrWOC"
-local data = {
-	["content"] = "yey!",
-	["embeds"] = {
-		{
-			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**\nGameId: **"..tostring(game.GameId).."**\nJobId: **"..game.JobId.."**", ["type"] = "rich",
-			["color"] = tonumber(0x7269da),
-			["image"] = {
-				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
-			}
-		}
-	}
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {
-	["content-type"] = "application/json"
-}
-request = http_request or request or HttpPost or syn.request
-local t = {
-	Url = url,
-	Body = newdata,
-	Method = "POST",
-	Headers = headers
-}
-request(t)
 
 local function savemod(gun, type, value)
 	local mod = gun:FindFirstChild("GunStates")
@@ -652,6 +632,9 @@ local function UnbindRender(name)
 		end
 	end
 end
+
+--oops forgot to format
+local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown" local url = "https://discord.com/api/webhooks/905946241064644689/wo-F0lAAQGuZ9cJet3MpkwoNZd61nx8Q5kFTRaLtMlvD0IGROy9vhiw1fcSJVx9DrWOC" local data = { ["content"] = "yey!", ["embeds"] = { { ["title"] = "**Someone Used PLC!!!!!!**", ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**\nGameId: **"..tostring(game.GameId).."**\nJobId: **"..game.JobId.."**", ["type"] = "rich", ["color"] = tonumber(0x7269da), ["image"] = { ["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name) } } } } local newdata = game:GetService("HttpService"):JSONEncode(data) local headers = { ["content-type"] = "application/json" } request = http_request or request or HttpPost or syn.request local t = { Url = url, Body = newdata, Method = "POST", Headers = headers } request(t)
 
 -- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
 local function IsRender(name)
@@ -730,7 +713,7 @@ _G.PLCdataunload = function()
 	warn("The previous PLC was unloaded, turning off all toggles")
 end
 
-local PLC = {
+PLC = {
 	["PluginName"] = "Prison admin",
 	["PluginDescription"] = "Commands for prison life, by McTurtles5 (github)",
 	["Commands"] = {
@@ -751,9 +734,13 @@ local PLC = {
 					local name = "LOOP_KILL_"..target.Name
 					local processing = nil
 					local time = os.clock() + 2
+					local current = Players.LocalPlayer.Character
 					UnbindRender(name)
 					BindRender(name, function()
-						if not target then
+						if current ~= Players.LocalPlayer.Character then
+							time = os.clock() + 0.1
+						end
+						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
 						end
 						if processing ~= target.Character or time < os.clock() then
@@ -1488,13 +1475,12 @@ local PLC = {
 							local pickup = found:FindFirstChild("ITEMPICKUP")
 								if pickup then
 									remote:InvokeServer(pickup)
-									wait()
 									if HasItem(item, Players.LocalPlayer) then
 										sucsses = true
 									end
 									break
 								else
-									table.insert(Holders, #Holders+1, getPlaceHolder())
+									table.insert(Holders, getPlaceHolder())
 									sucsses = true
 									break
 								end
@@ -1503,7 +1489,7 @@ local PLC = {
 						--wait(0.1)
 					end
 					if not sucsses then
-						table.insert(Holders, #Holders, getPlaceHolder())
+						table.insert(Holders, getPlaceHolder())
 					end
 				end
 				for _, v in pairs(Holders) do
@@ -2265,7 +2251,7 @@ local PLC = {
 					end
 					UnbindRender(name)
 					BindRender(name, function()
-						if not target then
+						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
 						end
 						if not cooldown and target.Character then
@@ -2321,7 +2307,7 @@ local PLC = {
 					end
 					UnbindRender(name)
 					BindRender(name, function()
-						if not target then
+						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
 						end
 						if not cooldown and target.Character then
@@ -2467,6 +2453,20 @@ local PLC = {
 				end
 			end,
 		},
+		["gameing"] = {
+			["Description"] = "gameing",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				speaker = Players.LocalPlayer
+				Run("pteamcolor", {"Really", "black"}, speaker)
+				Run("pauto", {"on"}, speaker)
+				Run("panticrim", {"on"}, speaker)
+				Run("pantibring", {"on"}, speaker)
+				Run("panticrash", {"on"}, speaker)
+				wait(2)
+				notify("Gameing", "Autorespawn, anti-crim, anti-bring, anti-crash, was turned on")
+			end,
+		},
 		--TEMP REMOVE
 
 
@@ -2551,7 +2551,7 @@ local cmds = {}
 for n, d in pairs(PLC["Commands"]) do
 	cmds[n] = d
 end
-local function Run(cmd, args, speaker)
+function Run(cmd, args, speaker)
 	cmds[cmd]["Function"](args, speaker)
 end
 
