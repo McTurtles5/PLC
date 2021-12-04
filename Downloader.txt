@@ -147,7 +147,7 @@ if writefile then
 		local data = game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC.IY")
 		Main.text.Text = "Installing"
 		Main.bar.bar.Size = UDim2.new(0.7, 0, 1, 0)
-		writefile(PLC.iy", data)
+		writefile("PLC.iy", data)
 		Main.text.Text = "Complete"
 		Main.bar.bar.Size = UDim2.new(1, 0, 1, 0)
 		wait(1)
