@@ -184,6 +184,14 @@ _G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Name"] = "getadmins",
 		["Aliases"] = {"chatnotifyadmins"}
 	},
+	["pgetloadouts"] = {
+		["Name"] = "getloadouts",
+		["Aliases"] = {"chatnotifyloadouts"}
+	},
+	["pgetgunmods"] = {
+		["Name"] = "getgunmods",
+		["Aliases"] = {"chatnotifygunmods"}
+	},
 	["pcar"] = {
 		["Name"] = "car",
 		["Aliases"] = {"spawncar", "summoncar"}
