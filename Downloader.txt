@@ -108,6 +108,7 @@ do
 	close.Size = UDim2.new(0.0219999999, 0, 0.0410000011, 0)
 
 	local RS = game:GetService("RunService")
+	local PARENT = game:GetService("CoreGui")
 	if RS:IsStudio() then
 		repeat
 			RS.RenderStepped:Wait()
@@ -115,7 +116,7 @@ do
 		PARENT = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 	elseif syn and syn.protect_gui then
 		local pro = Instance.new("ScreenGui")
-		pro.Name = "FPS counter"
+		pro.Name = "PLC downloader"
 		syn.protect_gui(pro)
 		pro.Parent = PARENT
 		PARENT = pro
@@ -145,7 +146,7 @@ if writefile then
 		local data = game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC.IY")
 		Main.text.Text = "Installing"
 		Main.bar.bar.Size = UDim2.new(0.7, 0, 1, 0)
-		writefile("PLC.iy", data)
+		writefile("test.iy", data)
 		Main.text.Text = "Complete"
 		Main.bar.bar.Size = UDim2.new(1, 0, 1, 0)
 		wait(1)
