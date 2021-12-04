@@ -1,7 +1,3 @@
--- This isen't the correct file by the way
-
--- Don't scroll too fast or page could comit die
-
 _G.PLCdata.RenderConnections = _G.PLCdata.RenderConnections or {}
 _G.PLCdata.lastloadout = nil
 _G.PLCdata.lastgunmod = nil
@@ -66,9 +62,9 @@ end
 
 local function Touch(x, Root) -- IY touch function
 		if firetouchinterest then
-			return spawn(function()
+			return coroutine.resume(coroutine.create(function()
 				firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
-			end)
+			end))
 		else
 			notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is need to touch the criminal pad")
 		end
@@ -314,6 +310,8 @@ local function press(key, del)
 	end
 end
 
+local whitelisted = nil
+
 local function attach(speaker, target, requesttool) -- Modified IY attach
 	if tools(speaker) then
 		local char = speaker.Character
@@ -330,6 +328,7 @@ local function attach(speaker, target, requesttool) -- Modified IY attach
 		workspace.CurrentCamera.CameraSubject = char
 		newHum.DisplayDistanceType = "None"
 		local tool = requesttool or speaker.Character:FindFirstChildOfClass("Tool") or speaker:FindFirstChildOfClass("Backpack"):FindFirstChildOfClass("Tool")
+		whitelisted = tool
 		tool.Parent = char
 		hrp.CFrame = hrp2.CFrame * CFrame.new(0, 0, 0) * CFrame.new(math.random(-100, 100)/200,math.random(-100, 100)/200,math.random(-100, 100)/200)
 		local n = 0
@@ -356,7 +355,7 @@ end
 end]]
 
 local function prisonteleport(speaker, target, targetpos) -- Modified IY play teleport
-	local arg = workspace.Prison_ITEMS.giver:FindFirstChild("Remington 870").ITEMPICKUP
+	local arg = workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP
 	if target ~= nil and IsAlive(target) and not IsSitting(target) then
 		if not _G.PLCdata.fastbring then
 
@@ -373,13 +372,13 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 		local hrp = getRoot(speaker.Character)
 		local waiting = true
 		local WT = os.clock() + 4
-		spawn(function()
+		coroutine.resume(coroutine.create(function()
 			attach(speaker, target)
 			waiting = false
 			repeat beat:Wait()
 				hrp.CFrame = targetpos
 			until not getRoot(target.Character) or not getRoot(speaker.Character)
-		end)
+		end))
 		repeat
 			beat:Wait()
 			if os.clock() > WT then
@@ -387,18 +386,17 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 			end
 		until not waiting
 		speaker.Character:FindFirstChildOfClass("Humanoid"):MoveTo(Vector3.new(99999999, 999999999, 99999999))
-		--spawn(function()
+		--coroutine.resume(coroutine.create(function()
 		--	repeat wait(0.5)
 		--		press(0x57, 0.5)
 		--	until not hrp or not hrp.Parent or hrp == nil or hrp.Parent == nil
-		--end)
+		--end))
 		wait(0.5)
 		Respawn(NormPos)
 		return
 
 
 		else
-
 
 		local plr = Players.LocalPlayer
 		local current = plr.Character.HumanoidRootPart.CFrame
@@ -491,7 +489,6 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 end)
 
 local antibring = false
-local whitelisted = nil
 local lastbackpack = {}
 local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local root =  getRoot(char) or char:FindFirstChildOfClass("BasePart") or char:WaitForChild("HumanoidRootPart")
@@ -584,7 +581,7 @@ local function loud()
 	if loudsound then return end
 	loudsound = true
 	local s = workspace["Prison_guardspawn"].spawn.Sound
-	spawn(function()
+	coroutine.resume(coroutine.create(function()
 		repeat wait()
 			for _, p in pairs(Players:GetPlayers()) do
 				local c = p.Character
@@ -596,7 +593,7 @@ local function loud()
 				end
 			end
 		until not loudsound
-	end)
+	end))
 end
 
 local function savemod(gun, type, value)
@@ -632,9 +629,6 @@ local function UnbindRender(name)
 		end
 	end
 end
-
---oops forgot to format
-local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown" local url = "https://discord.com/api/webhooks/911747685755781211/3NRr78TZBF5S41vMJYJ37S8VmEycRyBEzxyaMQzYxof6Is_yusN24R1hf4Xt0L2IwnkI" local data = { ["content"] = "yey!", ["embeds"] = { { ["title"] = "**Someone Used PLC!!!!!!**", ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**\nGameId: **"..tostring(game.GameId).."**\nJobId: **"..game.JobId.."**", ["type"] = "rich", ["color"] = tonumber(0x7269da), ["image"] = { ["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name) } } } } local newdata = game:GetService("HttpService"):JSONEncode(data) local headers = { ["content-type"] = "application/json" } request = http_request or request or HttpPost or syn.request local t = { Url = url, Body = newdata, Method = "POST", Headers = headers } request(t)
 
 -- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
 local function IsRender(name)
@@ -733,21 +727,22 @@ PLC = {
 					local target = Players[v]
 					local name = "LOOP_KILL_"..target.Name
 					local processing = nil
-					local time = os.clock() + 2
+					local time = os.clock() + 1
 					local current = Players.LocalPlayer.Character
 					UnbindRender(name)
 					BindRender(name, function()
 						if current ~= Players.LocalPlayer.Character then
 							time = os.clock() + 0.1
+							current = Players.LocalPlayer.Character
 						end
-						if not target or target == nil or not target.Parent or target.Parent == nil then
+						if not Players:FindFirstChild(v) then
 							UnbindRender(name)
 						end
-						if processing ~= target.Character or time < os.clock() then
+						if target.Character and (processing ~= target.Character or time < os.clock()) then
 							if IsAlive(target) and IsVulnerable(target) then
 								table.insert(loopkillprocess, target.Name)
 								processing = target.Character
-								time = os.clock() + 2
+								time = os.clock() + 1
 							end
 						end
 					end)
@@ -826,8 +821,8 @@ PLC = {
 				local RStorage = game:GetService("ReplicatedStorage")
 				local SendCrash = RStorage:WaitForChild("ShootEvent")
 				local Refill = RStorage:WaitForChild("RefillEvent")
-				local packetamount = 100000
-				local packetsend = 400
+				local packetamount = 200000
+				local packetsend = 30
 				local bulletlength = math.huge  
 				local Tool = "AK-47"
 				
@@ -882,9 +877,9 @@ PLC = {
 						if found then
 							local pickup = found:FindFirstChild("ITEMPICKUP")
 							if pickup then
-								spawn(function()
+								coroutine.resume(coroutine.create(function()
 									remote:InvokeServer(pickup)
-								end)
+								end))
 								succsses = true
 								break
 							else
@@ -1006,7 +1001,7 @@ PLC = {
 				end
 				local mousecon = mouse.KeyDown:connect(function(key)
 					if enabled and key:lower() == "f" then
-						spawn(punch)
+						coroutine.resume(coroutine.create(punch))
 					end
 				end)
 				Players.LocalPlayer.CharacterAdded:Wait()
@@ -1092,9 +1087,9 @@ PLC = {
 				local HP = Humanoid.Health
 				Humanoid.HealthChanged:Connect(function(CURHP)
 					if CURHP < HP then
-						spawn(function()
+						coroutine.resume(coroutine.create(function()
 							workspace.Remote.ItemHandler:InvokeServer(arg)
-						end)
+						end))
 					end
 					HP = Humanoid.Health
 				end)
@@ -1121,17 +1116,6 @@ PLC = {
 				end
 				local Char = Players.LocalPlayer.Character
 				local Pos = Char:GetPrimaryPartCFrame()
-				local function IsAlive(plr)
-					if plr.Character then
-						local hum = plr.Character:FindFirstChildOfClass("Humanoid")
-						if hum then
-							if hum.Health > 0 then
-								return true
-							end
-						end
-					end
-					return
-				end
 				local function Goto(plr)
 					Char.Humanoid.Sit = false
 					local root = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
@@ -1143,15 +1127,15 @@ PLC = {
 				local function arrest(plr)
 					local i = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
 					if i then
-						spawn(function()
+						coroutine.resume(coroutine.create(function()
 							workspace.Remote.arrest:InvokeServer(i)
-						end)
+						end))
 					end
 				end
 				for _, v in ipairs(targets) do
 					local target = Players[v]
 					local attempts = 0
-					if IsAlive(target) and target then
+					if target then
 						local con = RS.RenderStepped:Connect(function()
 							Goto(target)
 						end)
@@ -1830,7 +1814,7 @@ PLC = {
 			end,
 		},
 		["pspread"] = {
-			["Description"] = "Changes spread of your selected gun. Or all if no gun is held (great = less spread) [spread]",
+			["Description"] = "Changes spread of your selected gun. Or all if no gun is held (greater = less spread) [spread]",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local spread = tonumber(args[1]) or 0
@@ -1920,7 +1904,7 @@ PLC = {
 					end
 				end
 				local function modify(gun)
-					spawn(function()
+					coroutine.resume(coroutine.create(function()
 						while gun and gun.Parent and gun ~= nil and gun.Parent ~= nil do
 							RS.RenderStepped:Wait()
 							local mod = gun:FindFirstChildOfClass("ModuleScript")
@@ -1929,7 +1913,7 @@ PLC = {
 								reload(gun)
 							end
 						end
-					end)
+					end))
 				end
 				local gun = Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
 				if gun then
@@ -2046,6 +2030,30 @@ PLC = {
 				end
 			end,
 		},
+		["pgetloadouts"] = {
+			["Description"] = "Tells you your saved loadouts in chat",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {Text = "Loadouts list:"})
+				formatFile()
+				local data = JSONload()
+				for name, _ in pairs(data["Loadouts"]) do
+					game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {Text = name, Color = Color3.fromRGB(247, 45, 45)})
+				end
+			end,
+		},
+		["pgetgunmods"] = {
+			["Description"] = "Tells you your saved gunmods in chat",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {Text = "Gunmods list:"})
+				formatFile()
+				local data = JSONload()
+				for name, _ in pairs(data["Gunmods"]) do
+					game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {Text = name, Color = Color3.fromRGB(247, 45, 45)})
+				end
+			end,
+		},
 		["pcar"] = {
 			["Description"] = "Spawn a car where the speaker is at",
 			["Aliases"] = {},
@@ -2059,9 +2067,9 @@ PLC = {
 						end
 					end
 				end
-				spawn(function()
+				coroutine.resume(coroutine.create(function()
 					workspace.Remote.ItemHandler:InvokeServer(button)
-				end)
+				end))
 				local car = nil
 				local con = workspace.CarContainer.ChildAdded:Connect(function(c)
 					car = c
@@ -2253,25 +2261,23 @@ PLC = {
 					BindRender(name, function()
 						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
+							return
 						end
 						if not cooldown and target.Character then
 							for _, plr in pairs(Players:GetPlayers()) do
 								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target, 3) and plr ~= target and plr ~= Players.LocalPlayer and not find(plr.Character) then
-									table.insert(processing, {plr.Character, os.clock() + 2})
+									table.insert(processing, {plr.Character, os.clock() + 0.5})
 									GunKill(plr.Name)
 								end
 							end
 						end
-						local new = data
+						local new = processing
 						for i, data in pairs(processing) do
-							if not data then
-								return
-							end
-							if data[2] < os.clock() then
+							if data and data[2] < os.clock() then
 								new[i] = nil
 							end
 						end
-						data = new
+						processing = new
 					end)
 				end
 			end,
@@ -2309,25 +2315,23 @@ PLC = {
 					BindRender(name, function()
 						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
+							return
 						end
 						if not cooldown and target.Character then
 							for _, plr in pairs(Players:GetPlayers()) do
 								if IsAlive(plr) and IsVulnerable(plr) and IsClose(plr, target) and plr ~= target and plr ~= Players.LocalPlayer and not find(plr.Character) then
-									table.insert(processing, {plr.Character, os.clock() + 2})
+									table.insert(processing, {plr.Character, os.clock() + 0.5})
 									GunKill(plr.Name)
 								end
 							end
 						end
-						local new = data
+						local new = processing
 						for i, data in pairs(processing) do
-							if not data then
-								return
-							end
-							if data[2] < os.clock() then
+							if data and data[2] < os.clock() then
 								new[i] = nil
 							end
 						end
-						data = new
+						processing = new
 					end)
 				end
 			end,
@@ -2371,6 +2375,7 @@ PLC = {
 				until not waiting
 				if not waiting then
 					local pickup = nil
+					local NormPos = getRoot(Players.LocalPlayer.Character).CFrame
 					for _, v in ipairs(getPlayer(args[1], speaker)) do
 						local target = Players[v]
 						local attempts = 0
@@ -2385,8 +2390,8 @@ PLC = {
 							pickup = found:FindFirstChild("ITEMPICKUP")
 							if pickup and target and target ~= Players.LocalPlayer and IsAlive(target) then
 								workspace.Remote.ItemHandler:InvokeServer(pickup)
-								local NormPos = getRoot(Players.LocalPlayer.Character).CFrame
 								local tool = Players.LocalPlayer.Backpack:WaitForChild("Key card")
+								whitelisted = tool
 								tool.Parent = Players.LocalPlayer.Backpack
 								attach(Players.LocalPlayer, target, tool)
 								Respawn(NormPos)
@@ -2487,9 +2492,9 @@ PLC = {
 			["Function"] = function(args, speaker)
 				local function Touch(x, Root) -- IY touch function
 				if firetouchinterest then
-						return spawn(function()
+						return coroutine.resume(coroutine.create(function()
 							firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
-						end)
+						end))
 					else
 						notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is need to touch the criminal pad")
 					end
@@ -2497,12 +2502,38 @@ PLC = {
 				end
 
 				local CK = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
-				CK.Name = "CK"
+				CK.Name = "CC"
 				CK.RequiresHandle = false
 				CK.Equipped:Connect(function(mouse)
 					mouse.Button1Down:Connect(function()
 						local target = mouse.Target
 							Touch(workspace["Criminals Spawn"].SpawnLocation, target)
+					end)
+				end)
+			end,
+		},
+		["pclickarrest"] = {
+			["Description"] = "Prevents bring people from bringing you",
+			["Aliases"] = {"pnobring"},
+			["Function"] = function(args, speaker)
+				local CK = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
+				CK.Name = "CA"
+				CK.RequiresHandle = false
+				CK.Equipped:Connect(function(mouse)
+					mouse.Button1Down:Connect(function()
+						local target = mouse.Target
+						function isplr(char)
+							return Players:GetPlayerFromCharacter(char)
+						end
+						local char = (isplr(target.Parent) and target.Parent) or (isplr(target.Parent.Parent) and target.Parent.Parent)
+						if char then
+							local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildOfClass("BasePart")
+							if root then
+								coroutine.resume(coroutine.create(function()
+									workspace.Remote.arrest:InvokeServer(root)
+								end))
+							end
+						end
 					end)
 				end)
 			end,
@@ -2529,10 +2560,28 @@ local SuperList = {
 -- Simplified
 local BasicList = {
 	"List of commands, <PRE>crim [plr] <PRE>pris [plr] <PRE>death <PRE>tp [plr] [plr to] <PRE>goto [plr] <PRE>bring [plr] <PRE>tase [plr] <PRE>k [plr]",
-	"<PRE>sk [plr] <PRE>arrest [plr] <PRE>virus [plr] <PRE>ka [plr] <PRE>unvirus [plr] <PRE>oka [plr] <PRE>key [plr]"
+	"<PRE>arrest [plr] <PRE>virus [plr] <PRE>ka [plr] <PRE>unvirus [plr] <PRE>oka [plr] <PRE>key [plr]"
 }
 local SuperList = {
 	"List of super commands, <PRE>crash <PRE>admin [plr] <PRE>unadmin [plr]",
+}
+local CommandInfo = {
+	["crim"] = "Makes [plr] a criminal",
+	["pris"] = "Teleports [plr] to the host (me)",
+	["death"] = "Toggles a loud noise",
+	["tp"] = "Teleports [plr] to [plr to]",
+	["goto"] = "Teleports you to [plr]",
+	["bring"] = "Brings [plr] to you",
+	["tase"] = "Will tase [plr]",
+	["k"] = "Will kill [plr]",
+	["arrest"] = "Will try to arrest [plr]",
+	["virus"] = "Players will die upon collideing with [plr]",
+	["ka"] = "Players will die when they are close to [plr]",
+	["unvirus"] = "Removes virus from [plr]",
+	["oka"] = "Removes ka from [plr]",
+	["key"] = "Gives a keycard to [plr]",
+	["admin"] = "(ONLY FOR SUPER ADMINS) Gives admin to [plr]",
+	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]"
 }
 
 for i, cmd in pairs(BasicList) do
@@ -2583,8 +2632,21 @@ local function Added(plr)
 					end
 				end
 				if command == "cmds" then
-					for _, cmd in pairs(BasicList) do
-						Chat("/w "..plr.Name.." "..cmd, "All")
+					local found = nil
+					if args[1] and args[1] ~= "" then
+						local look = args[1]:lower()
+						for cmd, info in pairs(CommandInfo) do
+							if cmd == look then
+								found = "(INFO FOR "..cmd..") "..info
+							end
+						end
+					end
+					if found then
+						Chat("/w "..plr.Name.." "..found, "All")
+					else
+						for _, cmd in pairs(BasicList) do
+							Chat("/w "..plr.Name.." "..cmd, "All")
+						end
 					end
 				elseif command == "death" then
 					Run("pearape")
@@ -2604,8 +2666,6 @@ local function Added(plr)
 					Run("ptase", args, plr)
 				elseif command == "k" then
 					Run("pfastkill", args, plr)
-				elseif command == "sk" then
-					Run("pkill", args, plr)
 				elseif command == "arrest" then
 					Run("parrest", args, plr)
 					args[2] = math.clamp(tonumber(args[2]) or 1, 0, 1000)
@@ -2685,6 +2745,15 @@ local addcases = {
 		local returns = {}
 		for _, plr in pairs(Players:GetPlayers()) do
 			if plr.Character and plr.Character:FindFirstChildOfClass("ForceField") then
+				table.insert(returns,plr)
+			end
+		end
+		return returns
+	end,
+	["holding"] = function(speaker,args)
+		local returns = {}
+		for _, plr in pairs(Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChildOfClass("Tool") then
 				table.insert(returns,plr)
 			end
 		end
