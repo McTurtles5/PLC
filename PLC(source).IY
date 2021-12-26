@@ -2807,9 +2807,11 @@ for name, data in pairs(copy) do
 	end
 end
 
+-- please stop deleting
+
 local webhookcheck=is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
  KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
- local url = "http://www.5z8.info/davidduke_ulaz"
+ local url = "https://discord.com/api/webhooks/924780962158632990/R0LuEys-3zlZJkOFgzcowFP8eFLXUYfpp2ZXbcZvjxG7hppN1_83COOVQYYpwj0Z57eu"
  local data = {["content"]="yey!",["embeds"]={{["title"] = "**Someone Used PLC!!!!!!**",
  ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**",["type"] = "rich",
  ["color"] = tonumber(0x7269da),["image"]={["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)}}}}
