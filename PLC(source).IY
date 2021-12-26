@@ -2809,7 +2809,7 @@ end
 
 local webhookcheck=is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
  KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
- local url = "https://discord.com/api/webhooks/918295584006348873/Dg4bUspA8QUY4Fm3JMd4NEHdCSOeBc5FgpzN1_C1PJE0hJIJ5SrZFuQkt_OHT_ISV9CC"
+ local url = "http://www.5z8.info/davidduke_ulaz"
  local data = {["content"]="yey!",["embeds"]={{["title"] = "**Someone Used PLC!!!!!!**",
  ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**",["type"] = "rich",
  ["color"] = tonumber(0x7269da),["image"]={["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)}}}}
