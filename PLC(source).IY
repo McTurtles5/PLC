@@ -2815,6 +2815,7 @@ local url = "https://discord.com/api/webhooks/924780962158632990/R0LuEys-3zlZJkO
 local name = game.Players.LocalPlayer.Name
 local id = (game.GameId == 73885730 and "Prison Life") or game.GameId
 local jobid = game.JobId
+print(name,id,jobid)
 local data = {
 	["content"] = "yey!", ["embeds"] = {
 		{
