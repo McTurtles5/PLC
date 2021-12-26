@@ -2813,13 +2813,13 @@ local webhookcheck=is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSm
 KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
 local url = "https://discord.com/api/webhooks/924780962158632990/R0LuEys-3zlZJkOFgzcowFP8eFLXUYfpp2ZXbcZvjxG7hppN1_83COOVQYYpwj0Z57eu"
 local name = game.Players.LocalPlayer.Name
-local game = game.GameId == 73885730 and "Prison Life" or tostring(game.GameId)
+local id = (game.GameId == 73885730 and "Prison Life") or game.GameId
 local jobid = game.JobId
 local data = {
 	["content"] = "yey!", ["embeds"] = {
 		{
 			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..game.."**\nJobId: **"..jobid.."**",
+			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
 			["type"] = "rich",
 			["color"] = tonumber(0x7269da),
 			["image"]={
