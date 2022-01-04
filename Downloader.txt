@@ -148,6 +148,7 @@ if writefile then
 		Main.text.Text = "Installing"
 		Main.bar.bar.Size = UDim2.new(0.7, 0, 1, 0)
 		writefile("PLC.iy", data)
+		wait()
 		Main.text.Text = "Complete"
 		Main.bar.bar.Size = UDim2.new(1, 0, 1, 0)
 		wait(1)
