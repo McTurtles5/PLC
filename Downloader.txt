@@ -152,7 +152,7 @@ if writefile then
 		Main.text.Text = "Complete"
 		Main.bar.bar.Size = UDim2.new(1, 0, 1, 0)
 		wait(1)
-		Main.text.Text = "Do 'addplugin PLC' on infinite yield to add the plugin\n(you can close this now)"
+		Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(you can close this now)"
 		Main.button.Text = "Close"
 		Main.button.Visible = true
 		Main.bar.Visible = false
