@@ -1,25 +1,28 @@
--- I'd reccomend useing Downloader.txt
+-- I'd reccomend using Downloader.txt
 
-_G.PLCdata = {} -- DO NOT REMOVE
+ver = 1 -- DO NOT CHANGE OR REMOVE
 
-_G.PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
+local function gf() return getfenv() end -- DO NOT REMOVE
+gf().PLCdata = {} -- DO NOT REMOVE
 
-_G.PLCdata.admin = {} -- DO NOT REMOVE
-_G.PLCdata.admin.everyone = false -- If you want everyone to be admin
-_G.PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
+gf().PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
+
+gf().PLCdata.admin = {} -- DO NOT REMOVE
+gf().PLCdata.admin.everyone = false -- If you want everyone to be admin
+gf().PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
 	"gamer",
 	"gamerII",
 }
-_G.PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
+gf().PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
 	"Epicgamer",
 }
-_G.PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
+gf().PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
 	"annoyingnoob",
 }
 
-_G.PLCdata.admin.prefix = ":" -- The give admin prefix
+gf().PLCdata.admin.prefix = ":" -- The give admin prefix
 
-_G.PLCdata.cmdreplace = { -- What commands to replace with name and aliases
+gf().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 	["pfastkill"] = {
 		["Name"] = "k",
 		["Aliases"] = {}
