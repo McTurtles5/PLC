@@ -152,7 +152,16 @@ if writefile then
 		Main.text.Text = "Complete"
 		Main.bar.bar.Size = UDim2.new(1, 0, 1, 0)
 		wait(1)
-		Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(you can close this now)"
+		local copy = setclipboard or toclipboard or set_clipboard or (Clipboard and Clipboard.set)
+		if copy then
+			Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(click to copy)"
+			Main.text.MouseButton1Click:Connect(function()
+				copy("https://infinite.yiff.gg/Download.html")
+				Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(copied!)"
+			end)
+		else
+			Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html"
+		end
 		Main.button.Text = "Close"
 		Main.button.Visible = true
 		Main.bar.Visible = false
