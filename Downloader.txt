@@ -155,9 +155,11 @@ if writefile then
 		local copy = setclipboard or toclipboard or set_clipboard or (Clipboard and Clipboard.set)
 		if copy then
 			Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(click to copy)"
-			Main.text.MouseButton1Click:Connect(function()
-				copy("https://infinite.yiff.gg/Download.html")
-				Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(copied!)"
+			Main.text.InputBegan:Connect(function(key)
+				if key.UserInputType == Enum.UserInputType.MouseButton1 then
+					copy("https://infinite.yiff.gg/Download.html")
+					Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html\n(copied!)"
+				end
 			end)
 		else
 			Main.text.Text = "Do 'addplugin PLC' on Infinite Yield to add the plugin\nInfinite Yield: https://infinite.yiff.gg/Download.html"
