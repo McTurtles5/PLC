@@ -1,3 +1,5 @@
+-- Execute this in your script executer to download the PLC plugin
+
 -- PPPPPPPPPPPPPP     LLLL             CCCCCCCCCCCCCCC
 -- PPPPPPPPPPPPPP     LLLL             CCCCCCCCCCCCCCC
 -- PPPP      PPPP     LLLL             CCCC
@@ -14,8 +16,6 @@
 -- Thanks for chooseing PLC!
 
 --// DOWNLOADER CODE \\
-
--- Execute this code to download PLC
 
 local Main = nil
 
