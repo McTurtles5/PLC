@@ -15,7 +15,7 @@ if maintenanceInfo[1] then
 	wait(math.huge)
 end
 
-PLCver = 4 -- DO NOT CHANGE OR REMOVE
+PLCver = 5 -- DO NOT CHANGE OR REMOVE
 
 function gf() return getgenv() end -- DO NOT REMOVE
 gf().PLCdata = {} -- DO NOT REMOVE
