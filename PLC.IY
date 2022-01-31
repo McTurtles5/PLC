@@ -1,6 +1,6 @@
 -- I'd reccomend using Downloader.txt
 
-PLCver = 1 -- DO NOT CHANGE OR REMOVE
+PLCver = 2 -- DO NOT CHANGE OR REMOVE
 
 function gf() return getfenv() end -- DO NOT REMOVE
 gf().PLCdata = {} -- DO NOT REMOVE
