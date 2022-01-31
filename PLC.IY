@@ -2,7 +2,7 @@
 
 PLCver = 2 -- DO NOT CHANGE OR REMOVE
 
-function gf() return getfenv() end -- DO NOT REMOVE
+function gf() return getgenv() end -- DO NOT REMOVE
 gf().PLCdata = {} -- DO NOT REMOVE
 
 gf().PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
