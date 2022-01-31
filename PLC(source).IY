@@ -1,3 +1,161 @@
+local latestver = tonumber(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/latestVersion%23"))
+local currentver = tonumber(PLCver)
+
+if not currentver or latestver > currentver then
+	local Main = nil
+
+	do
+		local ScreenGui = Instance.new("ScreenGui")
+		local Frame = Instance.new("Frame")
+		local TextLabel = Instance.new("TextLabel")
+		local text = Instance.new("TextLabel")
+		local UITextSizeConstraint = Instance.new("UITextSizeConstraint")
+		local button = Instance.new("TextButton")
+		local UITextSizeConstraint_2 = Instance.new("UITextSizeConstraint")
+		local bar = Instance.new("Frame")
+		local bar_2 = Instance.new("Frame")
+		local close = Instance.new("ImageButton")
+
+		Frame.Parent = ScreenGui
+		Frame.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
+		Frame.BorderSizePixel = 0
+		Frame.ClipsDescendants = true
+		Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+		Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+		Frame.Size = UDim2.new(0.395932585, 0, 0.391442299, 0)
+
+		TextLabel.Parent = Frame
+		TextLabel.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+		TextLabel.BorderColor3 = Color3.fromRGB(11, 11, 11)
+		TextLabel.BorderSizePixel = 0
+		TextLabel.Size = UDim2.new(1, 0, 0.0700000003, 0)
+		TextLabel.Font = Enum.Font.SourceSansSemibold
+		TextLabel.Text = " PLC updater"
+		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TextLabel.TextScaled = true
+		TextLabel.TextSize = 1.000
+		TextLabel.TextWrapped = true
+		TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+		text.Name = "text"
+		text.Parent = Frame
+		text.AnchorPoint = Vector2.new(0.5, 0.5)
+		text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		text.BackgroundTransparency = 1.000
+		text.Position = UDim2.new(0.5, 0, 0.400000006, 0)
+		text.Size = UDim2.new(0.899999976, 0, 0.200000003, 0)
+		text.Font = Enum.Font.SourceSans
+		text.Text = "PLC updater is starting"
+		text.TextColor3 = Color3.fromRGB(255, 255, 255)
+		text.TextScaled = true
+		text.TextSize = 14.000
+		text.TextWrapped = true
+	
+		UITextSizeConstraint.Parent = text
+		UITextSizeConstraint.MaxTextSize = 24
+
+		button.Name = "button"
+		button.Visible = false
+		button.Parent = Frame
+		button.AnchorPoint = Vector2.new(0.5, 0.5)
+		button.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+		button.BorderSizePixel = 0
+		button.Position = UDim2.new(0.5, 0, 0.699999988, 0)
+		button.Size = UDim2.new(0.349999994, 0, 0.170000002, 0)
+		button.Font = Enum.Font.SourceSans
+		button.Text = "Download"
+		button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		button.TextScaled = true
+		button.TextSize = 14.000
+		button.TextWrapped = true
+
+		UITextSizeConstraint_2.Parent = button
+		UITextSizeConstraint_2.MaxTextSize = 24
+		
+		bar.Name = "bar"
+		bar.Parent = Frame
+		bar.AnchorPoint = Vector2.new(0.5, 0.5)
+		bar.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
+		bar.BorderColor3 = Color3.fromRGB(12, 12, 12)
+		bar.Position = UDim2.new(0.5, 0, 0.699999988, 0)
+		bar.Size = UDim2.new(0.75, 0, 0.0799999982, 0)
+		bar.Visible = false
+
+		bar_2.Name = "bar"
+		bar_2.Parent = bar
+		bar_2.BackgroundColor3 = Color3.fromRGB(117, 255, 25)
+		bar_2.Size = UDim2.new(0, 0, 1, 0)
+
+		close.Name = "close"
+		close.Parent = Frame
+		close.AnchorPoint = Vector2.new(1, 0)
+		close.BackgroundColor3 = Color3.fromRGB(255, 5, 5)
+		close.BorderSizePixel = 0
+		close.Position = UDim2.new(1, 0, 0, 0)
+		close.Size = UDim2.new(0.0219999999, 0, 0.0410000011, 0)
+
+		local RS = game:GetService("RunService")
+		local PARENT = game:GetService("CoreGui")
+		if RS:IsStudio() then
+			repeat
+				RS.RenderStepped:Wait()
+			until game:GetService("Players").LocalPlayer
+			PARENT = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+		elseif syn and syn.protect_gui then
+			local pro = Instance.new("ScreenGui")
+			pro.Name = "PLC downloader"
+			syn.protect_gui(pro)
+			pro.Parent = PARENT
+			PARENT = pro
+		elseif PARENT:FindFirstChild("RobloxGui") then
+			PARENT = PARENT:FindFirstChild("RobloxGui")
+		end
+		ScreenGui.Parent = PARENT
+
+		Main = Frame
+	end
+
+	local StarterGui = game:GetService("StarterGui")
+	local function notify(title, text)
+		StarterGui:SetCore("SendNotification", {Title = title, Text = text})
+	end
+	
+	Main.close.MouseButton1Click:Connect(function()
+		Main.Parent:Destroy()
+	end)
+
+	local s, e = pcall(function()
+		for i = 5, 1, -1 do
+			Main.text.Text = "PLC will start updating in "..i.." second(s)"
+			wait(1)
+		end
+		Main.text.Text = "Downloading"
+		Main.button.Visible = false
+		Main.bar.Visible = true
+		local data = game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC.IY")
+		Main.text.Text = "Installing"
+		Main.bar.bar.Size = UDim2.new(0.7, 0, 1, 0)
+		writefile("PLC.iy", data)
+		wait()
+		Main.text.Text = "Complete"
+		Main.bar.bar.Size = UDim2.new(1, 0, 1, 0)
+		deletePlugin("PLC")
+		wait(1)
+		addPlugin("PLC")
+		Main.text.Text = "PLC has finished updating"
+		Main.button.Text = "Close"
+		Main.button.Visible = true
+		Main.bar.Visible = false
+		Main.button.MouseButton1Click:Wait()
+		Main.Parent:Destroy()
+		return
+	end)
+	if not s then
+		notify("Error!", "An unexpected error occured and PLC did not update")
+		warn("Failed to update!, "..e)
+	end
+end
+
 _G.PLCdata.RenderConnections = _G.PLCdata.RenderConnections or {}
 _G.PLCdata.lastloadout = nil
 _G.PLCdata.lastgunmod = nil
