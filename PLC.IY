@@ -4,8 +4,8 @@ local maintenanceInfo = game:GetService("HttpService"):JSONDecode(game:HttpGet("
 if maintenanceInfo[1] then
 	notify("PLC maintenance", "PLC is under maintenance. Dev note: "..maintenanceInfo[2])
 	while wait(5) do
-		local avalible = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/maintenance"))
-		if avalible[1] then
+		local unavalible = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/maintenance"))
+		if not unavalible[1] then
 			deletePlugin("PLC")
 			wait(1)
 			addPlugin("PLC")
