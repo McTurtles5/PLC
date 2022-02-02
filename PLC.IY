@@ -1,10 +1,11 @@
 -- I'd reccomend using Downloader.txt
 
-local maintenanceInfo = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/maintenance"))
+local url = "https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/maintenance"
+local maintenanceInfo = game:GetService("HttpService"):JSONDecode(game:HttpGet(url))
 if maintenanceInfo[1] then
 	notify("PLC maintenance", "PLC is under maintenance. Dev note: "..maintenanceInfo[2])
 	while wait(5) do
-		local unavalible = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/maintenance"))
+		local unavalible = game:GetService("HttpService"):JSONDecode(game:HttpGet(url))
 		if not unavalible[1] then
 			deletePlugin("PLC")
 			wait(1)
@@ -15,7 +16,7 @@ if maintenanceInfo[1] then
 	wait(math.huge)
 end
 
-PLCver = 5 -- DO NOT CHANGE OR REMOVE
+PLCver = 6 -- DO NOT CHANGE OR REMOVE
 
 function gf() return getgenv() end -- DO NOT REMOVE
 gf().PLCdata = {} -- DO NOT REMOVE
