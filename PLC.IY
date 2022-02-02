@@ -16,7 +16,7 @@ if maintenanceInfo[1] then
 	wait(math.huge)
 end
 
-PLCver = 6 -- DO NOT CHANGE OR REMOVE
+PLCver = 7 -- DO NOT CHANGE OR REMOVE
 
 function gf() return getgenv() end -- DO NOT REMOVE
 gf().PLCdata = {} -- DO NOT REMOVE
@@ -277,5 +277,14 @@ gf().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 	},
 }
 
--- Don't go to loadstring you you could epicly crash
-return loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC(source).IY"))()
+local ret = nil
+local worked = pcall(function()
+	ret = loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC(source).IY"))()
+end)
+
+if not worked then
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/updater"))()
+	return
+end
+
+return ret
