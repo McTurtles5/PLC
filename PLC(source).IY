@@ -1,6 +1,6 @@
 function gf() return getgenv() end
 
-local latestver = tonumber(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/latestVersion%23"))
+local latestver = tonumber(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/latestversion"))
 local currentver = tonumber(PLCver)
 
 if not currentver or latestver > currentver then
