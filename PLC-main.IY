@@ -2640,9 +2640,9 @@ PLC = {
 				end
 			end,
 		},
-		["gameing"] = {
-			["ListName"] = "gameing",
-			["Description"] = "gameing",
+		["gaming"] = {
+			["ListName"] = "gaming",
+			["Description"] = "Basically gives you every command",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				speaker = Players.LocalPlayer
