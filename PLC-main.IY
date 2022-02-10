@@ -2643,7 +2643,7 @@ PLC = {
 		["gaming"] = {
 			["ListName"] = "gaming",
 			["Description"] = "Basically gives you every command",
-			["Aliases"] = {},
+			["Aliases"] = {"gameing"},
 			["Function"] = function(args, speaker)
 				speaker = Players.LocalPlayer
 				Run("pteamcolor", {"Really", "black"}, speaker)
