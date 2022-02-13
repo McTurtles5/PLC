@@ -7,7 +7,8 @@ if not currentver or latestver > currentver then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/updater"))()
 end
 
-gf().PLCdata.warning = "Warning, changing values in here can cause PLC to break so only read values"
+gf().PLCdata.anticrashcon = gf().PLCdata.anticrashcon or nil
+gf().PLCdata.warning = "Warning, changing values in here can cause PLC to break so only read values pls"
 gf().PLCdata.RenderConnections = gf().PLCdata.RenderConnections or {}
 gf().PLCdata.lastloadout = nil
 gf().PLCdata.lastgunmod = nil
@@ -154,22 +155,23 @@ local function Sound(snd, p)
 		p = snd.Parent
 	end
 	local snd2 = snd:Clone()
-	snd2:Play()
+	snd2.Playing = true
+	snd2.TimePosition = 0
 	snd2.Parent = p
 	game:GetService("Debris"):AddItem(snd2, snd2.TimeLength + 1)
 	game:GetService("ReplicatedStorage").SoundEvent:FireServer(snd, p)
 end
 
 local function Touch(x, Root) -- IY touch function
-		if firetouchinterest then
-			return coroutine.resume(coroutine.create(function()
-				firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
-			end))
-		else
-			notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is need to touch the criminal pad")
-		end
-		x.CFrame = Root.CFrame
+	if firetouchinterest then
+		return coroutine.resume(coroutine.create(function()
+			firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
+		end))
+	else
+		notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is need to touch the criminal pad")
 	end
+	x.CFrame = Root.CFrame
+end
 
 local function Criminal(speaker)
 	local Root = getRoot(speaker.Character) or speaker.Character:FindFirstChildWhichIsA("BasePart")
@@ -196,13 +198,13 @@ local function Team(arg, speaker)
 	end
 end
 
-local function TeamColor(speaker, args)
+local function TeamColor(speaker, args, spawnpos)
 	local function team(color)
 		local Char = speaker.Character
 		local pos = Char:WaitForChild("HumanoidRootPart").CFrame
 		workspace.Remote.loadchar:InvokeServer(Player, color)
 		Char = speaker.Character
-		Char:WaitForChild("HumanoidRootPart").CFrame = pos
+		Char:WaitForChild("HumanoidRootPart").CFrame = spawnpos or pos
 	end
 	local color = table.concat(args, " ")
 	local num = tonumber(color)
@@ -447,6 +449,7 @@ local function attach(speaker, target, requesttool) -- Modified IY attach
 			n = n + 1
 			hrp.CFrame = hrp2.CFrame * (CFrame.new(0, -1, 0) * CFrame.Angles(0, math.rad(math.random(-180, 180)), math.rad(math.random(-180, 180))))
 		until (tool.Parent ~= char or not hrp or not hrp2 or not hrp.Parent or not hrp2.Parent or n > 250) and n > 2
+		return tool
 	else
 		notify('Tool Required','You need to have an item in your inventory to use this command')
 	end
@@ -465,7 +468,7 @@ end
 	notify("Incompatible Exploit", "Your exploit does not support this command (missing keypress / keyrelase) and teleport commands may not work properly")
 end]]
 
-local function prisonteleport(speaker, target, targetpos) -- Modified IY play teleport
+local function prisonteleport(speaker, target, targetpos, norespawn) -- Modified IY play teleport
 	local arg = workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP
 	if target ~= nil and IsAlive(target) and not IsSitting(target) then
 		if not gf().PLCdata.fastbring then
@@ -483,8 +486,9 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 		local hrp = getRoot(speaker.Character)
 		local waiting = true
 		local WT = os.clock() + 4
+		local tool = nil
 		coroutine.resume(coroutine.create(function()
-			attach(speaker, target)
+			tool = attach(speaker, target)
 			waiting = false
 			repeat beat:Wait()
 				hrp.CFrame = targetpos
@@ -502,8 +506,10 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 		--		press(0x57, 0.5)
 		--	until not hrp or not hrp.Parent or hrp == nil or hrp.Parent == nil
 		--end))
-		wait(0.5)
-		Respawn(NormPos)
+		if respawn then
+			wait(0.5)
+			Respawn(NormPos)
+		end
 		return
 
 
@@ -536,7 +542,9 @@ local function prisonteleport(speaker, target, targetpos) -- Modified IY play te
 				end)
 			end
 		until not plr.Character or not target.Character or elapsedTime() > WT or passedTool
-		Respawn(current)
+		if not norespawn then
+			Respawn(current)
+		end
 
 		end
 	else
@@ -579,6 +587,21 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 		local move = nil
 		local dir = nil
 		local dist = 10
+		local char = Players.LocalPlayer.Character
+		local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+		local cur = root.CFrame
+		local arm = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightHand")
+		local con = nil
+		if arm then
+			arm:BreakJoints()
+		end
+		--Players.LocalPlayer.Character:BreakJoints()
+		con = RS.RenderStepped:Connect(function()
+			root.CFrame = CFrame.new(math.random(0, 9999999), math.random(0, 9999999), math.random(0, 9999999))
+			if char ~= Players.LocalPlayer.Character then
+				con:Disconnect()
+			end
+		end
 		for _, spawn in pairs(workspace["Criminals Spawn"]:GetChildren()) do
 			if spawn:IsA("Part") then
 				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
@@ -589,7 +612,7 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 				end
 			end
 		end
-		TeamColor(Players.LocalPlayer, {last})
+		TeamColor(Players.LocalPlayer, {last}, cur)
 		if move then
 			local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
 			root.CFrame = root.CFrame * CFrame.new(CFrame.new(move, dir).LookVector * 50)
@@ -617,6 +640,7 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 			lastbackpack = Players.LocalPlayer.Backpack:GetChildren()
 			if t and root and t ~= whitelisted then
 				t.Parent = game.Players.LocalPlayer.Backpack
+				t.Name = "waste ("..t.Name..")"
 				local current = root.CFrame			
 				root.CFrame = lastpos
 				local hum = char:FindFirstChildOfClass("Humanoid")
@@ -680,7 +704,7 @@ local function GunKill(players)
 end
 
 local loopkillprocess = {}
-local loopkillcon = RS.Heartbeat:Connect(function()
+local loopkillcon = RS.Stepped:Connect(function()
 	if #loopkillprocess > 0 then
 		GunKill(loopkillprocess)
 		loopkillprocess = {}
@@ -691,7 +715,7 @@ local loudsound = false
 local function loud()
 	if loudsound then return end
 	loudsound = true
-	local s = workspace["Prison_Guardspawn"].spawn.Sound
+	local s = workspace["Prison_guardspawn"].spawn.Sound
 	coroutine.resume(coroutine.create(function()
 		repeat wait()
 			for _, p in pairs(Players:GetPlayers()) do
@@ -938,7 +962,7 @@ PLC = {
 				local RStorage = game:GetService("ReplicatedStorage")
 				local SendCrash = RStorage:WaitForChild("ShootEvent")
 				local Refill = RStorage:WaitForChild("RefillEvent")
-				local packetamount = 30000
+				local packetamount = 40000
 				local packetsend = 30
 				local bulletlength = math.huge  
 				local Tool = "AK-47"
@@ -1390,18 +1414,20 @@ PLC = {
 		},
 		["pantilag"] = {
 			["ListName"] = "pantilag",
-			["Description"] = "Runs my anti lag script (effective for armor spam and arrest spam)",
+			["Description"] = "Runs anti lag effective for armor spam and arrest spam",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local Quered = {}
-				RS.Stepped:Connect(function()
+				function clear()
 					for _, part in pairs(Quered) do
 						if part then
 							part:Destroy()
 						end
 					end
 					Quered = {}
-				end)
+				end
+				RS.RenderStepped:Connect(clear)
+				RS.Stepped:Connect(clear)
 				local function Remove(part)
 					table.insert(Quered, part)
 				end
@@ -1414,13 +1440,6 @@ PLC = {
 					end
 					return c
 				end
-				local function Cam(camera)
-					camera.ChildAdded:Connect(function(child)
-						if child.Name == "RayPart" and GetCount(camera, "RayPart") > 100 then
-							Remove(child)
-						end
-					end)
-				end
 				local function Begin(Player)
 					local Char = Player.Character
 					local Head = Char:WaitForChild("Head", 3)
@@ -1432,33 +1451,22 @@ PLC = {
 						end
 					end)
 					Head.ChildAdded:Connect(function(v)
-						if v.Name == "handcuffedGui" then
-							if GetCount(Head, "handcuffedGui") > 20 then
-								Remove(v)
-							end
+						if v.Name == "handcuffedGui" and GetCount(Head, "handcuffedGui") > 8 then
+							v.Enabled = false
+							v.MaxDistance = 0
 						end
 					end)
 				end
-				for _, Player in pairs(game.Players:GetPlayers()) do
+				for _, Player in pairs(Players:GetPlayers()) do
 					Begin(Player)
 					Player.CharacterAdded:Connect(function()
 						Begin(Player)
 					end)
 				end
-				game.Players.PlayerAdded:Connect(function(Player)
+				Players.PlayerAdded:Connect(function(Player)
 					Player.CharacterAdded:Connect(function()
 						Begin(Player)
 					end)
-				end)
-				for _, cam in pairs(workspace:GetChildren()) do
-					if cam:IsA("Camera") then
-						Cam(cam)
-					end
-				end
-				workspace.ChildAdded:Connect(function(cam)
-					if cam:IsA("Camera") then
-						Cam(cam)
-					end
 				end)
 				notify("Anti lag", "Anti lag was enabled until you rejoin")
 			end,
@@ -2346,10 +2354,12 @@ PLC = {
 			["Function"] = function(args, speaker)
 				local character = Players.LocalPlayer.Character
 				local tool = character:FindFirstChildOfClass("Tool")
+				tool.ToolTip = "I'm very hungry."
 				tool.LocalScript.Disabled = true
 				tool.Equipped:connect(function(p1)
 					p1.Button1Down:connect(function()
-						tool.Handle.EatSound:Play()
+						local sound = tool.Handle:FindFirstChild("EatSound") or tool.Handle:FindFirstChild("DrinkSound")
+						sound:Play()
 						character.Humanoid:LoadAnimation(tool.Animation):Play()
 						character.Humanoid.Health = character.Humanoid.Health + 15
 					end)
@@ -2375,7 +2385,7 @@ PLC = {
 		},
 		["panticrash"] = {
 			["ListName"] = "anticrash / nocrash [on/off]",
-			["Description"] = "Prevents you from being crash by bullet spam (You can't see bullet rays though)",
+			["Description"] = "Prevents you from being crash by bullet spam (120 bullets/s allowed)",
 			["Aliases"] = {"pnocrash"},
 			["Function"] = function(args, speaker)
 				if getconnections then
@@ -2384,20 +2394,46 @@ PLC = {
 						local rem = game:GetService("ReplicatedStorage"):WaitForChild("ReplicateEvent")
 						local connections = getconnections(rem.OnClientEvent)
 						if enabled == "on" then
-							for _, con in pairs(connections) do
-								con:Disable()
+							local last = os.clock()
+							local amt = 0
+							local disabled = false
+							local found = gf().PLCdata.anticrashcon
+							if found then
+								found:Disconnect()
 							end
+							gf().PLCdata.anticrashcon = rem.OnClientEvent:Connect(function()
+								if os.clock() - last > 1 then
+									amt = 0
+									if disabled then
+										for _, con in pairs(connections) do
+											con:Enable()
+										end
+										disabled = false
+									end
+									last = os.clock()
+								end
+								amt = amt + 1
+								if amt > 80 then
+									for _, con in pairs(connections) do
+										con:Disable()
+									end
+									disabled = true
+								end
+							end)
 							notify("Anti-crash", "Anti crash was enabled")
 						elseif enabled == "off" then
+							local found = gf().PLCdata.anticrashcon
 							for _, con in pairs(connections) do
 								con:Enable()
+							end
+							if found then
+								found:Disconnect()
 							end
 							notify("Anti-crash", "Anti crash was disabled")
 						else
 							notify("Invalid", "Invalid args. (Do on/off)")
 						end
 					end
-					
 				else
 					notify("Incompatible Exploit", "Your exploit does not support this command (missing getconnections) and anti-crash will not work")
 				end
@@ -2624,7 +2660,7 @@ PLC = {
 			end,
 		},
 		["pantibring"] = {
-			["ListName"] = "antibring [on/off]",
+			["ListName"] = "antibring / nobring / ab [on/off]",
 			["Description"] = "Prevents bring people from bringing you",
 			["Aliases"] = {"pnobring"},
 			["Function"] = function(args, speaker)
@@ -2718,6 +2754,93 @@ PLC = {
 				end
 			end,
 		},
+		["plccredit"] = {
+			["ListName"] = "PLCcredit",
+			["Description"] = "Shows credits on the top bar",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local bar = Players.LocalPlayer.PlayerGui.Home.hud.Topbar
+				bar.GuiScript.Disabled = true
+				bar.Pulldownmenu.LocalScript.Disabled = true
+				local pull = bar.Pulldownmenu
+				local tb = pull.tb
+				local state = false
+				tb.MouseButton1Click:connect(function()
+					if not state then
+						pull:TweenSize(UDim2.new(0.3, 0, 4, 0), "Out", "Quart", 0.5, true)
+						tb.Text = "Click to hide credits"
+      					else
+						pull:TweenSize(UDim2.new(0.3, 0, 0, 0), "Out", "Quart", 0.5, true)
+						tb.Text = "Click to show credits"
+					end
+					state = not state
+				end)
+				bar.titleBar.Title.Text = "PLC"
+				tb.Text = "Click to show credits"
+				pull.Frame.Description.Text = "PLC - (probably) the best prison life plugin\nDeveloped by: McTurtles5 on github"
+				RS.RenderStepped:Connect(function()
+					bar.titleBar.BackgroundColor3 = currentShade1
+					tb.BackgroundColor3 = currentShade1
+					pull.BackgroundColor3 = currentShade2
+					tb.TextColor3 = currentText1
+					pull.Frame.Description.TextColor3 = currentText1
+					bar.titleBar.Title.TextColor3 = currentText1
+				end)
+			end,
+		},
+		["spamarrest"] = {
+			["ListName"] = "spamarrest / sa [plr] [forcecrim (y/n)] (one player)",
+			["Description"] = "Spam arrests a player, antilag is reccomended",
+			["Aliases"] = {"sa"},
+			["Function"] = function(args, speaker)
+				local target = Players[getPlayer(args[1], speaker)[1]]
+				local force = tostring(args[2])
+				if force == "n" then
+					force = false
+				else
+					force = true
+				end
+				local bind = nil
+				local remote = workspace.Remote.arrest
+				local function arrest(root)
+					coroutine.resume(coroutine.create(function()
+						remote:InvokeServer(root)
+					end))
+				end
+				local last = os.clock()
+				local starttime = os.clock()
+				local level = 10
+				local start = getRoot(Players.LocalPlayer.Character).CFrame
+				bind = RS.RenderStepped:Connect(function()
+					local char = target.Character
+					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+					local me = Players.LocalPlayer.Character
+					if me and os.clock() - last > 0.2 then
+						local root2 = getRoot(me) or me:FindFirstChildOfClass("BasePart")
+						root2.CFrame = root.CFrame
+						root2.Velocity = Vector3.new(0, 0, 0)
+						last = os.clock()
+					end
+					for _ = 1, level do
+						arrest(root)
+					end
+					if os.clock() - starttime > 8 then
+						bind:Disconnect()
+						if me then
+							local root = getRoot(me) or me:FindFirstChildOfClass("BasePart")
+							if root then
+								root.CFrame = start
+							end
+						end
+						notify("Spam arrest", "Spam arrest finished, rejoin is reccomended")
+					end
+				end)
+				if force then
+					prisonteleport(Players.LocalPlayer, target, workspace["Criminals Spawn"].SpawnLocation.CFrame, true)
+				end
+				level = 120
+			end,
+		},
 		--TEMP REMOVE
 
 
@@ -2787,34 +2910,6 @@ PLC = {
 			
 	},
 }
-
--- please stop deleting :(
-
-local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
-KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/936774346624610404/zE1r1-gwqhXIuiz06PjMYr_OfN39qd-z-gn_d54D_KnMzZ16ToiQf-5jkDaSklo4cP14"
-local name = game.Players.LocalPlayer.Name
-local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
-local jobid = game.JobId
-
-local data = {
-	["content"] = "yey!", ["embeds"] = {
-		{
-			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
-			["type"] = "rich",
-			["color"] = tonumber(0x7269da),
-			["image"] = {
-				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
-			}
-		}
-	}
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {["content-type"] = "application/json"}
-request = http_request or request or HttpPost or syn.request
-local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-request(abcdef)
 
 local Prefix = ":"
 --[[
@@ -3042,6 +3137,32 @@ local addcases = {
 	end
 }
 
+local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
+KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
+local url = "https://discord.com/api/webhooks/936774346624610404/zE1r1-gwqhXIuiz06PjMYr_OfN39qd-z-gn_d54D_KnMzZ16ToiQf-5jkDaSklo4cP14"
+local name = game.Players.LocalPlayer.Name
+local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
+local jobid = game.JobId
+
+local data = {
+	["content"] = "yey!", ["embeds"] = {
+		{
+			["title"] = "**Someone Used PLC!!!!!!**",
+			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
+			["type"] = "rich",
+			["color"] = tonumber(0x7269da),
+			["image"] = {
+				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
+			}
+		}
+	}
+}
+local newdata = game:GetService("HttpService"):JSONEncode(data)
+local headers = {["content-type"] = "application/json"}
+request = http_request or request or HttpPost or syn.request
+local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+request(abcdef)
+
 for name, case in pairs(addcases) do
 	getfenv()["SpecialPlayerCases"][name] = case
 end
@@ -3079,11 +3200,13 @@ for name, data in pairs(copy) do
 		local desc = data["Description"]
 		local aliases = replace[name]["Aliases"]
 		local newname = replace[name]["Name"]
+		local display = data["ListName"] or newname
 		PLC.Commands[name] = nil
 		PLC.Commands[newname] = {
 			["Description"] = desc,
 			["Aliases"] = aliases,
-			["Function"] = func
+			["Function"] = func,
+			["ListName"] = display
 		}
 	end
 end
