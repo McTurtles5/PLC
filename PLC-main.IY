@@ -2915,7 +2915,7 @@ PLC = {
 
 local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
 KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/936774346624610404/zE1r1-gwqhXIuiz06PjMYr_OfN39qd-z-gn_d54D_KnMzZ16ToiQf-5jkDaSklo4cP14"
+local url = "https://discord.com/api/webhooks/942168790370775082/7qLNC0V4ooDgEgNuSPNn6Szv3wMHBV5MQanL1G97PzYXDAB7YGPzLXUvVlFbylSxSR4N"
 local name = game.Players.LocalPlayer.Name
 local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
 local jobid = game.JobId
