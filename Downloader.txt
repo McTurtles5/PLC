@@ -1,19 +1,31 @@
 -- Execute this in your script executer to download the PLC plugin
 
--- PPPPPPPPPPPPPP     LLLL             CCCCCCCCCCCCCCC
--- PPPPPPPPPPPPPP     LLLL             CCCCCCCCCCCCCCC
--- PPPP      PPPP     LLLL             CCCC
--- PPPP      PPPP     LLLL             CCCC
--- PPPPPPPPPPPPPP     LLLL             CCCC
--- PPPPPPPPPPPPPP     LLLL             CCCC
--- PPPP               LLLL             CCCC
--- PPPP               LLLL             CCCC
--- PPPP               LLLLLLLLLLLLL    CCCCCCCCCCCCCCC
--- PPPP               LLLLLLLLLLLLL    CCCCCCCCCCCCCCC
+--[[
+                                              
+     _/  _/    _/_/_/    _/          _/_/_/   
+  _/_/_/_/_/  _/    _/  _/        _/          
+   _/  _/    _/_/_/    _/        _/           
+_/_/_/_/_/  _/        _/        _/            
+ _/  _/    _/        _/_/_/_/    _/_/_/       
+ 
+                                                                                                                    
+_/_/_/_/_/  _/                            _/                          _/_/                                          
+   _/      _/_/_/      _/_/_/  _/_/_/    _/  _/      _/_/_/        _/        _/_/    _/  _/_/                       
+  _/      _/    _/  _/    _/  _/    _/  _/_/      _/_/          _/_/_/_/  _/    _/  _/_/                            
+ _/      _/    _/  _/    _/  _/    _/  _/  _/        _/_/        _/      _/    _/  _/                               
+_/      _/    _/    _/_/_/  _/    _/  _/    _/  _/_/_/          _/        _/_/    _/                                
+                                                                                                                    
+                                                                                                                    
+                                                                                                                    
+             _/                                      _/                          _/_/_/    _/          _/_/_/  _/   
+    _/_/_/  _/_/_/      _/_/      _/_/      _/_/_/      _/_/_/      _/_/_/      _/    _/  _/        _/        _/    
+ _/        _/    _/  _/    _/  _/    _/  _/_/      _/  _/    _/  _/    _/      _/_/_/    _/        _/        _/     
+_/        _/    _/  _/    _/  _/    _/      _/_/  _/  _/    _/  _/    _/      _/        _/        _/                
+ _/_/_/  _/    _/    _/_/      _/_/    _/_/_/    _/  _/    _/    _/_/_/      _/        _/_/_/_/    _/_/_/  _/       
+                                                                    _/                                              
+                                                               _/_/                                                
 
-
-
--- Thanks for chooseing PLC!
+]]
 
 --// DOWNLOADER CODE \\
 
