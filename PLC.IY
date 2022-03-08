@@ -1,8 +1,10 @@
 -- I'd reccomend using Downloader.txt
 
+local bypassMaintenance = false
+
 local url = "https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/maintenance"
 local maintenanceInfo = game:GetService("HttpService"):JSONDecode(game:HttpGet(url))
-if maintenanceInfo[1] then
+if maintenanceInfo[1] and not bypassMaintenance then
 	notify("PLC maintenance", "PLC is under maintenance. Dev note: "..maintenanceInfo[2])
 	while wait(5) do
 		local unavalible = game:GetService("HttpService"):JSONDecode(game:HttpGet(url))
@@ -16,266 +18,28 @@ if maintenanceInfo[1] then
 	wait(math.huge)
 end
 
-PLCver = 7 -- DO NOT CHANGE OR REMOVE
+PLCver = 8 -- DO NOT CHANGE OR REMOVE
 
-function gf() return getgenv() end -- DO NOT REMOVE
-gf().PLCdata = {} -- DO NOT REMOVE
+local function ge() return getgenv() end
 
-gf().PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
+ge().PLCdata = ge().PLCdata or {} -- DO NOT REMOVE
 
-gf().PLCdata.admin = {} -- DO NOT REMOVE
-gf().PLCdata.admin.everyone = false -- If you want everyone to be admin
-gf().PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
+ge().PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
+
+ge().PLCdata.admin = {} -- DO NOT REMOVE
+ge().PLCdata.admin.everyone = false -- If you want everyone to be admin
+ge().PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
 	"gamer",
 	"gamerII",
 }
-gf().PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
+ge().PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
 	"Epicgamer",
 }
-gf().PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
+ge().PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
 	"annoyingnoob",
 }
 
-gf().PLCdata.admin.prefix = ":" -- The give admin prefix
-
-gf().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
-	["pfastkill"] = {
-		["Name"] = "k",
-		["Aliases"] = {}
-	},
-	["ploopkill"] = {
-		["Name"] = "loopkill",
-		["Aliases"] = {"lk"}
-	},
-	["punloopkill"] = {
-		["Name"] = "unloopkill",
-		["Aliases"] = {"unlk"}
-	},
-	["pkill"] = {
-		["Name"] = "tk",
-		["Aliases"] = {"tkill"}
-	},
-	["pteamcolor"] = {
-		["Name"] = "pteamcolor",
-		["Aliases"] = {"teamc", "tc"}
-	},
-	["pteam"] = {
-		["Name"] = "pteam",
-		["Aliases"] = {"t"}
-	},
-	["pcrash"] = {
-		["Name"] = "crash",
-		["Aliases"] = {}
-	},
-	["pgetgun"] = {
-		["Name"] = "getgun",
-		["Aliases"] = {"gun", "item", "get"}
-	},
-	["phardrespawn"] = {
-		["Name"] = "hardrespawn",
-		["Aliases"] = {"hre"}
-	},
-	["pauto"] = {
-		["Name"] = "auto",
-		["Aliases"] = {"autore", "autorespawn"}
-	},
-	["pka"] = {
-		["Name"] = "arua",
-		["Aliases"] = {"killarua", "ka"}
-	},
-	["pfastpunch"] = {
-		["Name"] = "fastpunch",
-		["Aliases"] = {"superpunch", "fp"}
-	},
-	["psuperfastpunch"] = {
-		["Name"] = "superfastpunch",
-		["Aliases"] = {"fastsuperpunch", "sfp"}
-	},
-	["parmorgod"] = {
-		["Name"] = "armorgod",
-		["Aliases"] = {"agod"}
-	},
-	["pcriminal"] = {
-		["Name"] = "criminal",
-		["Aliases"] = {"crim"}
-	},
-	["parrest"] = {
-		["Name"] = "arrest",
-		["Aliases"] = {"ar"}
-	},
-	["pgive"] = {
-		["Name"] = "give",
-		["Aliases"] = {}
-	}, 
-	["pdeletshield"] = {
-		["Name"] = "deletshield",
-		["Aliases"] = {"noshield"}
-	},
-	["pgetcolor"] = {
-		["Name"] = "getcolor",
-		["Aliases"] = {"notifycolor"}
-	},
-	["pfastcar"] = {
-		["Name"] = "fastcar",
-		["Aliases"] = {"racecar"}
-	},
-	["pdamage"] = {
-		["Name"] = "damage",
-		["Aliases"] = {}
-	},
-	["p18+"] = {
-		["Name"] = "18+",
-		["Aliases"] = {"\112\112", "\68\65\68\68\89\73\84\83\66\73\71"} -- dont see what it says pls
-	},
-	["ploadout"] = {
-		["Name"] = "loadout",
-		["Aliases"] = {"getloadout"}
-	},
-	["psaveloadout"] = {
-		["Name"] = "saveloadout",
-		["Aliases"] = {"writeloadout"}
-	},
-	["pdeletloadout"] = {
-		["Name"] = "deletloadout",
-		["Aliases"] = {}
-	},
-	["ploadgunmod"] = {
-		["Name"] = "loadgunmod",
-		["Aliases"] = {"loadmod"}
-	},
-	["pgunwithgunmod"] = {
-		["Name"] = "gunwithgunmod",
-		["Aliases"] = {"gunwithgunmod", "loadgunwithgunmod", "gunwmod"}
-	},
-	["psavegunmod"] = {
-		["Name"] = "savegunmod",
-		["Aliases"] = {}
-	},
-	["pdeletgunmod"] = {
-		["Name"] = "deletgunmod",
-		["Aliases"] = {}
-	},
-	["pfixfade"] = {
-		["Name"] = "fixfade",
-		["Aliases"] = {"restorefade"}
-	},
-	["ptase"] = {
-		["Name"] = "tase",
-		["Aliases"] = {}
-	},
-	["pmodgun"] = {
-		["Name"] = "modgun",
-		["Aliases"] = {}
-	},
-	["pspread"] = {
-		["Name"] = "gunspread",
-		["Aliases"] = {"spread"}
-	},
-	["prange"] = {
-		["Name"] = "gunrange",
-		["Aliases"] = {"range"}
-	},
-	["pnoreloadtime"] = {
-		["Name"] = "noreloadtime",
-		["Aliases"] = {"fastreload", "fastr"}
-	},
-	["pinfammo"] = {
-		["Name"] = "infammo",
-		["Aliases"] = {}
-	},
-	["pswatak"] = {
-		["Name"] = "swatak",
-		["Aliases"] = {"fakem4", "fakem4a1", "bootlegm4a1", "bootlegm4"}
-	},
-	["pearape"] = {
-		["Name"] = "earape",
-		["Aliases"] = {"loudnoise", "loud"}
-	},
-	["padmin"] = {
-		["Name"] = "admin",
-		["Aliases"] = {}
-	},
-	["punadmin"] = {
-		["Name"] = "unadmin",
-		["Aliases"] = {}
-	},
-	["pgetadmins"] = {
-		["Name"] = "getadmins",
-		["Aliases"] = {"chatnotifyadmins"}
-	},
-	["pgetloadouts"] = {
-		["Name"] = "getloadouts",
-		["Aliases"] = {"chatnotifyloadouts"}
-	},
-	["pgetgunmods"] = {
-		["Name"] = "getgunmods",
-		["Aliases"] = {"chatnotifygunmods"}
-	},
-	["pcar"] = {
-		["Name"] = "car",
-		["Aliases"] = {"spawncar", "summoncar"}
-	},
-	["pdeletcar"] = {
-		["Name"] = "deletcar",
-		["Aliases"] = {"removecar"}
-	},
-	["ptogglefastbring"] = {
-		["Name"] = "togglefastbring",
-		["Aliases"] = {"turnfastbring", "tfb"}
-	},
-	["pfasteat"] = {
-		["Name"] = "fasteat",
-		["Aliases"] = {"hungry"}
-	},
-	["pantitase"] = {
-		["Name"] = "antitase",
-		["Aliases"] = {"notase", "tase=bad"}
-	},
-	["panticrash"] = {
-		["Name"] = "anticrash",
-		["Aliases"] = {"nocrash"}
-	},
-	["pcamlookat"] = {
-		["Name"] = "camlookat",
-		["Aliases"] = {}
-	},
-	["pvirus"] = {
-		["Name"] = "virus",
-		["Aliases"] = {}
-	},
-	["punvirus"] = {
-		["Name"] = "unvirus",
-		["Aliases"] = {"cure"}
-	},
-	["pgivearua"] = {
-		["Name"] = "givearua",
-		["Aliases"] = {}
-	},
-	["premovearua"] = {
-		["Name"] = "removearua",
-		["Aliases"] = {}
-	},
-	["pjoinjobid"] = {
-		["Name"] = "joinjobid",
-		["Aliases"] = {}
-	},
-	["pkey"] = {
-		["Name"] = "key",
-		["Aliases"] = {}
-	},
-	["pclickkill"] = {
-		["Name"] = "clickkill",
-		["Aliases"] = {"ck"}
-	},
-	["panticrim"] = {
-		["Name"] = "anticrim",
-		["Aliases"] = {"nocrim"}
-	},
-	["pantibring"] = {
-		["Name"] = "antibring",
-		["Aliases"] = {"nobring"}
-	},
-}
+ge().PLCdata.admin.prefix = ":" -- The give admin prefix
 
 local ret = nil
 local worked = pcall(function()
