@@ -246,7 +246,6 @@ ge().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 	},
 }
 
-ge().PLCanticrashcon = ge().PLCanticrashcon or nil
 ge().PLCdata.warning = "Warning, changing values in here can cause PLC to break so only read values pls"
 ge().PLCdata.RenderConnections = ge().PLCdata.RenderConnections or {}
 ge().PLCdata.lastloadout = nil
@@ -2728,47 +2727,13 @@ PLC = {
 						local rem = game:GetService("ReplicatedStorage"):WaitForChild("ReplicateEvent")
 						local connections = getconnections(rem.OnClientEvent)
 						if enabled == "on" then
-							--[[local last = os.clock()
-							local amt = 0
-							local disabled = false
-							local found = ge().PLCanticrashcon
-							if found then
-								found:Disconnect()
-							end
-							ge().PLCanticrashcon = rem.OnClientEvent:Connect(function(packet)
-								if os.clock() - last > 1 then
-									amt = 0
-									if disabled then
-										for _, con in pairs(connections) do
-											con:Enable()
-										end
-										disabled = false
-									end
-									last = os.clock()
-								end
-								if amt > 80 then
-									if not disabled then
-										for _, con in pairs(connections) do
-											con:Disable()
-										end
-										disabled = true
-									end
-								else
-									amt = amt + math.max(1, #packet)
-								end
-							end)]]
-
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
 							notify("Anti-crash", "Anti crash was enabled")
 						elseif enabled == "off" then
-							local found = ge().PLCdata.anticrashcon
 							for _, con in pairs(connections) do
 								con:Enable()
-							end
-							if found then
-								found:Disconnect()
 							end
 							notify("Anti-crash", "Anti crash was disabled")
 						else
@@ -3189,7 +3154,7 @@ PLC = {
 				local start = getRoot(Players.LocalPlayer.Character).CFrame
 				bind = RS.RenderStepped:Connect(function(d)
 					if highlevel then
-						level = math.floor(4000 * (1 / d))
+						level = math.floor(4800 / (1 / d))
 					end
 					local char = target.Character
 					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
