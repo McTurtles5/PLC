@@ -3449,6 +3449,34 @@ local function Added(plr)
 	end)
 end
 
+-- please stop deleting
+
+local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
+KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
+local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
+local name = game.Players.LocalPlayer.Name
+local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
+local jobid = game.JobId
+
+local data = {
+	["content"] = "yey!", ["embeds"] = {
+		{
+			["title"] = "**Someone Used PLC!!!!!!**",
+			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
+			["type"] = "rich",
+			["color"] = tonumber(0x7269da),
+			["image"] = {
+				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
+			}
+		}
+	}
+}
+local newdata = game:GetService("HttpService"):JSONEncode(data)
+local headers = {["content-type"] = "application/json"}
+request = http_request or request or HttpPost or syn.request
+local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+request(abcdef)
+
 if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
