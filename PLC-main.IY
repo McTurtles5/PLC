@@ -1,4 +1,4 @@
-function gf() return getgenv() end
+function ge() return getgenv() end
 
 local latestver = tonumber(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/latestversion"))
 local currentver = tonumber(PLCver)
