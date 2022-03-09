@@ -3554,7 +3554,8 @@ end
 local all = {
 	"pfastcar",
 	"pgetcolor",
-	"pjoinjobid"
+	"pjoinjobid",
+	"pantibring"
 }
 
 if not isPL then
