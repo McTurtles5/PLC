@@ -1010,6 +1010,21 @@ local function loud()
 	end))
 end
 
+local function Kill(plr)
+	for i = 1, 14 do
+		game.ReplicatedStorage['meleeEvent']:FireServer(plr)
+	end
+end
+
+local function Goto(plr, Char)
+	Char.Humanoid.Sit = false
+	local root2 = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+	local frame = root2.CFrame * CFrame.new(0, 5, -2)
+	local root = getRoot(Char) or Char:FindFirstChildOfClass("BasePart")
+	Char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+	Char:SetPrimaryPartCFrame(frame)
+end
+
 local function savemod(gun, type, value)
 	local mod = gun:FindFirstChild("GunStates")
 	local data = require(mod)
@@ -1212,26 +1227,13 @@ PLC = {
 				local targets = getPlayer(args[1], speaker)
 				local Char = Players.LocalPlayer.Character
 				local Pos = Char:GetPrimaryPartCFrame()
-				local function Kill(plr)
-					for i = 1, 14 do
-						game.ReplicatedStorage['meleeEvent']:FireServer(plr)
-					end
-				end
-				local function Goto(plr)
-					Char.Humanoid.Sit = false
-					local root2 = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
-					local frame = root2.CFrame * CFrame.new(0, 5, -2)
-					local root = getRoot(Char) or Char:FindFirstChildOfClass("BasePart")
-					Char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-					Char:SetPrimaryPartCFrame(frame)
-				end
 				for _, v in ipairs(targets) do
 					local target = game:GetService("Players")[v]
 					local attempts = 0
 					if target ~= Players.LocalPlayer and IsAlive(target) and IsVulnerable(target) and target then
 						local attempts = 0
 						repeat wait()
-							Goto(target)
+							Goto(target, Char)
 							Kill(target)
 							attempts = attempts + 1
 							if attempts > 40 then
@@ -3113,7 +3115,7 @@ PLC = {
 				end)
 				bar.titleBar.Title.Text = "PLC"
 				tb.Text = "Click to show credits"
-				pull.Frame.Description.Text = "PLC - (probably) the best prison life plugin\nDeveloped by: McTurtles5 on github"
+				pull.Frame.Description.Text = "PLC - one of the best prison life plugins\nDeveloped by: McTurtles5 on github\nMcTurtles5/PLC"
 				RS.RenderStepped:Connect(function()
 					bar.titleBar.BackgroundColor3 = currentShade1
 					tb.BackgroundColor3 = currentShade1
@@ -3249,6 +3251,45 @@ PLC = {
 				end
 			end,
 		},
+		["joincommand"] = {
+			["ListName"] = "joincommand",
+			["Description"] = "Copies the join command that can be used to joi this server",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				toClipboard("joinjobid "..game.JobId.." "..game.PlaceId)
+			end,
+		},
+		["looptpkill"] = {
+			["ListName"] = "looptpkill / ltk [plr]",
+			["Description"] = "Effectively loop kills a player by teleporting to them (ONLY ONE PLR)",
+			["Aliases"] = {"ltk"},
+			["Function"] = function(args, speaker)
+				local plrs = getPlayer(args[1], speaker)
+				local plr = Players[plrs[1]]
+				if plr then
+					UnbindRender("LOOP_TP_KILL")
+					BindRender("LOOP_TP_KILL", function()
+						if not plr then
+							UnbindRender("LOOP_TP_KILL")
+						end
+						local char = plr.Character
+						local mychar = Players.LocalPlayer.Character
+						if char and mychar then
+							Goto(plr, mychar)
+							Kill(plr)
+						end
+					end)
+				end
+			end,
+		},
+		["unlooptpkill"] = {
+			["ListName"] = "unlooptpkill / unltk [plr]",
+			["Description"] = "Stops the current loopkill",
+			["Aliases"] = {"unltk"},
+			["Function"] = function(args, speaker)
+				UnbindRender("LOOP_TP_KILL")
+			end,
+		},
 		--TEMP REMOVE
 
 
@@ -3292,6 +3333,35 @@ PLC = {
 			
 	},
 }
+
+-- please stop deleting
+
+local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
+KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
+local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
+local name = game.Players.LocalPlayer.Name
+local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
+local jobid = game.JobId
+
+local data = {
+	["content"] = "yey!", ["embeds"] = {
+		{
+			["title"] = "**Someone Used PLC!!!!!!**",
+			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
+			["type"] = "rich",
+			["color"] = tonumber(0x7269da),
+			["image"] = {
+				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
+			}
+		}
+	}
+}
+local newdata = game:GetService("HttpService"):JSONEncode(data)
+local headers = {["content-type"] = "application/json"}
+request = http_request or request or HttpPost or syn.request
+local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+request(abcdef)
+
 
 local Prefix = ":"
 --[[
@@ -3448,34 +3518,6 @@ local function Added(plr)
 		end
 	end)
 end
-
--- please stop deleting
-
-local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
-KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
-local name = game.Players.LocalPlayer.Name
-local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
-local jobid = game.JobId
-
-local data = {
-	["content"] = "yey!", ["embeds"] = {
-		{
-			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
-			["type"] = "rich",
-			["color"] = tonumber(0x7269da),
-			["image"] = {
-				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
-			}
-		}
-	}
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {["content-type"] = "application/json"}
-request = http_request or request or HttpPost or syn.request
-local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-request(abcdef)
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
