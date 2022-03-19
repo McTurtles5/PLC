@@ -1044,6 +1044,11 @@ local function isSafe(hit, safe)
 	return table.find(safe, hit and hit.Parent and hit.Parent.Name) or table.find(safe, hit and hit.Parent and hit.Parent.Parent and hit.Parent.Parent.Name) 
 end
 
+local function Chat(msg)
+	game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+end
+
+ge().PLCdata.dmgmul = ge().PLCdata.dmgmul or 1
 if isPL and (not ge().PLCdata.nohit and getrawmetatable and setreadonly) then
 	ge().PLCdata.nohit = ge().PLCdata.nohit or {}
 	local gt = getrawmetatable(game)
@@ -1051,6 +1056,7 @@ if isPL and (not ge().PLCdata.nohit and getrawmetatable and setreadonly) then
 	setreadonly(gt, false)
 	gt.__namecall = newcclosure(function(self, ...)
 		local check = getnamecallmethod()
+		local s = getcallingscript()
 		if check == "FireServer" and self.Name == "ShootEvent" then
 			local args = {...}
 			for index = 1, #args[1] do
@@ -1058,6 +1064,16 @@ if isPL and (not ge().PLCdata.nohit and getrawmetatable and setreadonly) then
 				if isSafe(hit, ge().PLCdata.nohit) then
 					args[1][index]["Hit"] = nil
 				end
+			end
+
+			if ge().PLCdata.dmgmul > 1 then
+				local new = {}
+				for _, bullet in pairs(args[1]) do
+					for _ = 1, ge().PLCdata.dmgmul do
+						table.insert(new, bullet)
+					end
+				end
+				args[1] = new
 			end
 			return last(self, unpack(args))
 		end
@@ -1082,6 +1098,13 @@ local function UnbindRender(name)
 			table.remove(ge().PLCdata.RenderConnections, i)
 		end
 	end
+end
+
+-- This unbinds and rebinds the function(s) that habe the name (<string>name)
+
+local function RebindRender(name, func)
+	UnbindRender(name)
+	BindRender(name, func)
 end
 
 -- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
@@ -1187,8 +1210,7 @@ PLC = {
 					local processing = nil
 					local time = os.clock() + 1
 					local current = Players.LocalPlayer.Character
-					UnbindRender(name)
-					BindRender(name, function()
+					RebindRender(name, function()
 						if current ~= Players.LocalPlayer.Character then
 							time = os.clock() + 0.2
 							current = Players.LocalPlayer.Character
@@ -1264,9 +1286,11 @@ PLC = {
 			end,
 		},
 		["pcrash"] = {
+			["ListName"] = "crash [message?]",
 			["Description"] = "Crashes everyone else (but can break ur connection. if yes rejoin)",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
+				local message = table.concat(args, " ")
 				local RStorage = game:GetService("ReplicatedStorage")
 				local SendCrash = RStorage:WaitForChild("ShootEvent")
 				local Refill = RStorage:WaitForChild("RefillEvent")
@@ -1296,6 +1320,10 @@ PLC = {
 							Cframe = CFrame.new(),
 							Distance = bulletlength
 						}
+					end
+
+					if message ~= "" then
+						Chat(message)
 					end
 
 					notify("Crash", "Sending crash packets... (don't use ak-47)")
@@ -2775,8 +2803,7 @@ PLC = {
 						end
 						return
 					end
-					UnbindRender(name)
-					BindRender(name, function()
+					RebindRender(name, function()
 						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
 							return
@@ -2831,8 +2858,7 @@ PLC = {
 						end
 						return
 					end
-					UnbindRender(name)
-					BindRender(name, function()
+					RebindRender(name, function()
 						if not target or target == nil or not target.Parent or target.Parent == nil then
 							UnbindRender(name)
 							return
@@ -3267,17 +3293,22 @@ PLC = {
 				local plrs = getPlayer(args[1], speaker)
 				local plr = Players[plrs[1]]
 				if plr then
-					UnbindRender("LOOP_TP_KILL")
-					BindRender("LOOP_TP_KILL", function()
+					local last = os.clock()
+					local lastchar = nil
+					RebindRender("LOOP_TP_KILL", function()
 						if not plr then
 							UnbindRender("LOOP_TP_KILL")
 						end
 						local char = plr.Character
 						local mychar = Players.LocalPlayer.Character
-						if char and mychar then
-							Goto(plr, mychar)
-							Kill(plr)
+						if last < os.clock() or char ~= lastchar then
+							if char and mychar then
+								Goto(plr, mychar)
+								Kill(plr)
+							end
+							last = os.clock + 0.4
 						end
+						lastchar = char
 					end)
 				end
 			end,
@@ -3288,6 +3319,29 @@ PLC = {
 			["Aliases"] = {"unltk"},
 			["Function"] = function(args, speaker)
 				UnbindRender("LOOP_TP_KILL")
+			end,
+		},
+		["skydive"] = {
+			["ListName"] = "skydive / drop [plr] [dist?]",
+			["Description"] = "Teleports a player a certain distance above themselves",
+			["Aliases"] = {"drop"},
+			["Function"] = function(args, speaker)
+				local players = getPlayer(args[1], speaker)
+				local dist = tonumber(args[2]) or 210
+				for _, v in pairs(players) do
+					local root = getRoot(Players[v].Character) or Players[v].Character:FindFirstChildOfClass("BasePart")
+					if not root then return end
+					local bringpos = CFrame.new(root.Position + Vector3.new(0, dist, 0))
+					prisonteleport(Players.LocalPlayer, Players[v], bringpos)
+				end
+			end,
+		},
+		["damagemul"] = {
+			["ListName"] = "damagemul / dmgmul [mul?]",
+			["Description"] = "Sets the gun damage multiplier (MAY CAUSE SERVER LAG)",
+			["Aliases"] = {"dmgmul"},
+			["Function"] = function(args, speaker)
+				ge().PLCdata.dmgmul = math.floor(tonumber(args[1]) or 1)
 			end,
 		},
 		--TEMP REMOVE
@@ -3423,10 +3477,6 @@ for n, d in pairs(PLC["Commands"]) do
 end
 function Run(cmd, args, speaker)
 	cmds[cmd]["Function"](args, speaker)
-end
-
-local function Chat(msg)
-	game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
 end
 
 local function Added(plr)
