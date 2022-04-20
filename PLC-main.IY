@@ -356,7 +356,6 @@ if isPL then
 	addParts("walls", workspace.Prison_Cellblock.b_front.glass, "Part", "Part")
 	addParts("walls", workspace.Prison_Cellblock.c_wall, "Part", "Part")
 	addParts("walls", workspace.Prison_Cellblock, "c_corner", "WedgePart")
-
 	addParts("walls", workspace.Prison_Cellblock.a_front, "Part", "Part")
 	addParts("walls", workspace.Prison_Cellblock.a_walls, "wall", "Part")
 	addParts("walls", workspace.Prison_Cellblock.a_outerwall, "Part", "Part")
@@ -365,6 +364,7 @@ if isPL then
 	addParts("walls", workspace.Prison_Cellblock.doors, "a_door", "UnionOperation")
 	addParts("walls", workspace.Prison_Cellblock.a_front.glass, "Part", "Part")
 	addParts("walls", workspace.Prison_Cellblock.c_wall, "Part", "Part")
+	addParts("walls", workspace.Prison_Guard_Outpost.doorwindow, "hitbox", "Part")
 
 	addSubParts("walls", workspace.Prison_Guard_Outpost, "part", "Part")
 	addSubParts("walls", workspace.Prison_Administration.walls, "part", "Part")
@@ -385,8 +385,38 @@ local possibleItems = {
 	"Hammer",
 	"Remington 870",
 	"M4A1",
-	"Key card",
+	"Key card"
 }
+
+local hostileItems = {
+	"M9",
+	"AK-47",
+	"Crude Knife",
+	"Hammer",
+	"Remington 870",
+	"M4A1"
+}
+
+local function isHostile(plr)
+	if plr:FindFirstChildOfClass("Backpack") then
+		for _, v in pairs(plr.Backpack:GetChildren()) do
+			if table.find(hostileItems, v.Name) then
+				return true
+			end
+		end
+	end
+	if plr.Character then
+		for _, v in pairs(plr.Character:GetChildren()) do
+			if table.find(hostileItems, v.Name) then
+				return true
+			end
+		end
+	end
+	if plr:FindFirstChild("Status") and plr.Status:FindFirstChild("isHostile") and  plr.Status.isHostile.Value then
+		return true
+	end
+	return 
+end
 
 local function Sound(snd, p)
 	if not p then
@@ -1040,6 +1070,8 @@ local function savemod(gun, type, value)
 	data["PLCModifications"][type] = value
 end
 
+local innocents = {}
+
 local function isSafe(hit, safe)
 	return table.find(safe, hit and hit.Parent and hit.Parent.Name) or table.find(safe, hit and hit.Parent and hit.Parent.Parent and hit.Parent.Parent.Name) 
 end
@@ -1061,7 +1093,7 @@ if isPL and (not ge().PLCdata.nohit and getrawmetatable and setreadonly) then
 			local args = {...}
 			for index = 1, #args[1] do
 				local hit = args[1][index]["Hit"]
-				if isSafe(hit, ge().PLCdata.nohit) then
+				if isSafe(hit, ge().PLCdata.nohit) or (#innocents > 0 and isSafe(hit, innocents)) then
 					args[1][index]["Hit"] = nil
 				end
 			end
@@ -1083,10 +1115,11 @@ end
 
 -- I'll comment on these if you're curious
 
--- This binds a function to the name (<string>name, <function>)
+-- This binds a function to the name (<string>name, <function>, <RBXscriptconnection>bindto?)
 
-local function BindRender(name, func)
-	table.insert(ge().PLCdata.RenderConnections, {["Name"] = name, ["Connection"] = RS.RenderStepped:Connect(func)})
+local function BindRender(name, func, con)
+	con = con or RS.RenderStepped
+	table.insert(ge().PLCdata.RenderConnections, {["Name"] = name, ["Connection"] = con:Connect(func)})
 end
 
 -- This unbinds the function(s) that have the name (<string>name)
@@ -1102,9 +1135,9 @@ end
 
 -- This unbinds and rebinds the function(s) that habe the name (<string>name)
 
-local function RebindRender(name, func)
+local function RebindRender(name, func, con)
 	UnbindRender(name)
-	BindRender(name, func)
+	BindRender(name, func, con)
 end
 
 -- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
@@ -2730,17 +2763,28 @@ PLC = {
 				character.Humanoid:UnequipTool(tool)
 			end,
 		},
-		["pantitase"] = {
+		["pantitase"] = { -- "Those annoying taser spammers are no match for you"
 			["ListName"] = "antitase / notase / tase=bad",
 			["Description"] = "Well, you cant get tased. Doesent get any simpler than that",
 			["Aliases"] = {"pnotase"},
 			["Function"] = function(args, speaker)
 				if getconnections then
-					local connections = getconnections(workspace.Remote.tazePlayer.OnClientEvent)
-					for _, con in pairs(connections) do
-						con:Disable()
+					local arg = tostring(args[1]):lower()
+					if arg == "on" then
+						local ev = workspace.Remote.tazePlayer.OnClientEvent
+						RebindRender("ANTI_TASE", function()
+							local connections = getconnections(ev)
+							for _, con in pairs(connections) do
+								con:Disable()
+							end
+						end)
+						notify("Enabled", "Anti-tase was enabled")
+					elseif arg == "off" then
+						UnbindRender("ANTI_TASE")
+						notify("Disabled", "Anti-tase was disabled")
+					else
+						notfiy("Invalid", "Invalid argument. Do 'on/off'")
 					end
-					notify("Anti-tase", "Those annoying taser spammers are no match for you")
 				else
 					notify("Incompatible Exploit", "Your exploit does not support this command (missing getconnections) and anti-tase will not work")
 				end
@@ -3153,10 +3197,11 @@ PLC = {
 			end,
 		},
 		["spamarrest"] = {
-			["ListName"] = "spamarrest / sa [plr] [forcecrim (y/n)] (one player)",
-			["Description"] = "Spam arrests a player, antilag is reccomended",
+			["ListName"] = "spamarrest / sa [plr] [forcecrim (y/n)] [APS] (one player)",
+			["Description"] = "Spam arrests a player, antilag is reccomended. APS is Arrests Per Second",
 			["Aliases"] = {"sa"},
 			["Function"] = function(args, speaker)
+				local aps = tonumber(args[3]) or 2000
 				local target = Players[getPlayer(args[1], speaker)[1]]
 				if spamming then
 					notify("Spam arrest", "There are multiple spam arrests now")
@@ -3180,9 +3225,16 @@ PLC = {
 				local level = 10
 				local highlevel = false
 				local start = getRoot(Players.LocalPlayer.Character).CFrame
+				local crims = game:GetService("Teams").Criminals
+				local lastcrim = 0
 				bind = RS.RenderStepped:Connect(function(d)
+					if force and target.Team ~= crims and lastcrim < os.clock() then
+						lastcrim = os.clock() + 3
+						prisonteleport(Players.LocalPlayer, target, workspace["Criminals Spawn"].SpawnLocation.CFrame, false)
+						highlevel = true
+					end
 					if highlevel then
-						level = math.floor(4800 / (1 / d))
+						level = math.max(1, math.floor(aps * d))
 					end
 					local char = target.Character
 					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
@@ -3212,14 +3264,15 @@ PLC = {
 						spamming = false
 						return
 					end
+					if not (target and target.Parent) then
+						bind:Disconnect()
+						spamming = false
+						notify("Spam arrest", "Spam arrest cancelled (player left)")
+					end
 					for _ = 1, level do
 						arrest(root)
 					end
 				end)
-				if force then
-					prisonteleport(Players.LocalPlayer, target, workspace["Criminals Spawn"].SpawnLocation.CFrame, false)
-				end
-				highlevel = true
 			end,
 		},
 		["cancelspamarrest"] = {
@@ -3306,7 +3359,7 @@ PLC = {
 								Goto(plr, mychar)
 								Kill(plr)
 							end
-							last = os.clock + 0.4
+							last = os.clock() + 0.4
 						end
 						lastchar = char
 					end)
@@ -3342,6 +3395,109 @@ PLC = {
 			["Aliases"] = {"dmgmul"},
 			["Function"] = function(args, speaker)
 				ge().PLCdata.dmgmul = math.floor(tonumber(args[1]) or 1)
+			end,
+		},
+		["antiwarning"] = {
+			["ListName"] = "antiwarning / aw [on/off]",
+			["Description"] = "Makes it so that you can't damage innocent players",
+			["Aliases"] = {"aw"},
+			["Function"] = function(args, speaker)
+				local arg = args[1]:lower()
+				if arg == "on" then
+					RebindRender("ANTI_WARNING", function()
+						table.clear(innocents)
+						for _, plr in pairs(Players:GetPlayers()) do
+							if not isHostile(plr) then
+								table.insert(innocents, plr.Name)
+							end
+						end
+					end)
+					notify("Enabled", "Antiwarning was enabled")
+				elseif arg == "off" then
+					UnbindRender("ANTI_WARNING")
+					table.clear(innocents)
+					notify("Disabled", "Antiwarning was disabled")
+				else
+					notify("Invalid", "Invalid argument. Do 'on/off'")
+				end
+			end,
+		},
+		["nocollide"] = {
+			["ListName"] = "nocollide / nc [plr]",
+			["Description"] = "Makes it so that you can't collide with the player, to prevent flings",
+			["Aliases"] = {"nc"},
+			["Function"] = function(args, speaker)
+				local players = getPlayer(args[1], speaker)
+				for _, v in pairs(players) do
+					local plr = Players[v]
+					RebindRender("NO_COLLIDE_"..v, function()
+						if not plr or not plr.Parent then
+							UnbindRender("NO_COLLIDE_"..v)
+						end
+						local c = plr.Character
+						if c then
+							for _, p in pairs(c:GetDescendants()) do
+								if p:IsA("BasePart") then
+									p.CanCollide = false
+								end
+							end
+						end
+					end, RS.Stepped)
+				end
+			end,
+		},
+		["unnocollide"] = {
+			["ListName"] = "unnocollide / unnc [plr]",
+			["Description"] = "Stops nocollide",
+			["Aliases"] = {"unnc"},
+			["Function"] = function(args, speaker)
+				local players = getPlayer(args[1], speaker)
+				for _, v in pairs(players) do
+					UnbindRender("NO_COLLIDE_"..v)
+				end
+			end,
+		},
+		["deathcar"] = {
+			["ListName"] = "deathcar / deadlycar",
+			["Description"] = "Stops nocollide",
+			["Aliases"] = {"deadlycar"},
+			["Function"] = function(args, speaker)local Players = game:GetService("Players")
+				local seat = Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").SeatPart
+				if seat then
+					local car = seat.Parent.Parent
+					if car then
+						local cp = car.Body:FindFirstChild("ColorParts") or car.Body:FindFirstChild("Model")
+						local hitbox = Instance.new("Part", car)
+
+						local z = 1.8
+						if cp.Name == "Model" then
+							z = -10
+						end
+
+						hitbox.CanCollide = false
+						hitbox.Transparency = 0.5
+
+						hitbox.Massless = true
+						hitbox.CFrame = cp.Engine.CFrame * CFrame.new(0, 0.6, z)
+						hitbox.Size = Vector3.new(8, 2.8, 6)
+
+						local w = Instance.new("WeldConstraint", hitbox)
+
+						w.Part0 = hitbox
+						w.Part1 = cp.Engine
+
+						hitbox.Touched:Connect(function(hit)
+							local p = Players:GetPlayerFromCharacter(hit.Parent)
+							if p and p ~= Players.LocalPlayer and IsAlive(p) and IsVulnerable(p) then
+								for _ = 1, 10 do
+									game:GetService("ReplicatedStorage").meleeEvent:FireServer(p)
+								end
+							end
+						end)
+						return
+					end
+				end
+				notify("Error", "Sit in a car first!")
 			end,
 		},
 		--TEMP REMOVE
@@ -3388,35 +3544,6 @@ PLC = {
 	},
 }
 
--- please stop deleting
-
-local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
-KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
-local name = game.Players.LocalPlayer.Name
-local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
-local jobid = game.JobId
-
-local data = {
-	["content"] = "yey!", ["embeds"] = {
-		{
-			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
-			["type"] = "rich",
-			["color"] = tonumber(0x7269da),
-			["image"] = {
-				["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" ..tostring(game:GetService("Players").LocalPlayer.Name)
-			}
-		}
-	}
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {["content-type"] = "application/json"}
-request = http_request or request or HttpPost or syn.request
-local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-request(abcdef)
-
-
 local Prefix = ":"
 --[[
 
@@ -3445,7 +3572,7 @@ local CommandInfo = {
 	["pris"] = "Teleports [plr] to the host (me)",
 	["death"] = "Toggles a loud noise",
 	["tp"] = "Teleports [plr] to [plr to]",
-	["goto"] = "Teleports you to [plr]",
+	["to"] = "Teleports you to [plr]",
 	["bring"] = "Brings [plr] to you",
 	["tase"] = "Will tase [plr]",
 	["k"] = "Will kill [plr]",
@@ -3525,7 +3652,7 @@ local function Added(plr)
 					Run("pcriminal", args, plr)
 				elseif command == "pris" then
 					Run("pbring", args, plr)
-				elseif command == "goto" then
+				elseif command == "to" then
 					local t = {plr.Name, args[1]}
 					Run("pteleport", t, plr)
 				elseif command == "bring" then
@@ -3639,16 +3766,39 @@ local addcases = {
 	end
 }
 
-for name, case in pairs(addcases) do
-	getfenv()["SpecialPlayerCases"][name] = case
-end
+-- please stop deleting
+
+local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
+KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
+local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
+local name = game.Players.LocalPlayer.Name
+local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
+local jobid = game.JobId
+
+local data = {
+	["content"] = "yey!", ["embeds"] = {
+		{
+			["title"] = "**Someone Used PLC!!!!!!**",
+			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
+			["type"] = "rich",
+			["color"] = tonumber(0x7269da)
+		}
+	}
+}
+local newdata = game:GetService("HttpService"):JSONEncode(data)
+local headers = {["content-type"] = "application/json"}
+request = http_request or request or HttpPost or syn.request
+local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+request(abcdef)
+
 
 local all = {
 	"pfastcar",
 	"pgetcolor",
 	"pjoinjobid",
 	"pantibring",
-	"joincommand"
+	"joincommand",
+	"nocollide"
 }
 
 if not isPL then
@@ -3665,6 +3815,20 @@ if not isPL then
 			notify("Notification", info)
 		end
 	}
+else
+	addcases["hostile"] = function(speaker,args)
+		local returns = {}
+		for _, plr in pairs(Players:GetPlayers()) do
+			if isHostile(plr) then
+				table.insert(returns,plr)
+			end
+		end
+		return returns
+	end
+end
+
+for name, case in pairs(addcases) do
+	getfenv()["SpecialPlayerCases"][name] = case
 end
 
 local replace = ge().PLCdata.cmdreplace
