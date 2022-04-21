@@ -3869,7 +3869,7 @@ for name, data in pairs(copy) do
 end
 
 if isPL then
-	local hieght = -165
+	local hieght = -475
 	local found = workspace:FindFirstChild("PLC - antifall")
 	if found then
 		found:Destroy()
