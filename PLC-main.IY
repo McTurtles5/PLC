@@ -3714,28 +3714,7 @@ end
 
 -- PLC usage notifyer thingy
 
-local exploit = (identifyexecutor and identifyexecutor()) or "unknown"
-local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
-local name = game.Players.LocalPlayer.Name
-local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
-local jobid = game.JobId
-
-local data = {
-	["content"] = "yey!", ["embeds"] = {
-		{
-			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: "..name.." with **"..exploit.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
-			["type"] = "rich",
-			["color"] = tonumber(0x7269da)
-		}
-	}
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {["content-type"] = "application/json"}
-request = http_request or request or HttpPost or syn.request
-local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-request(abcdef)
-
+loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/usagenotify"))()
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
