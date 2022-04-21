@@ -525,8 +525,7 @@ local function IsArrested(plr)
 end
 
 local function Respawn(spawnpos)
-	local camtrackback = 4 -- How many frames the cam track goes back by (the higher: less chance of camera reset but more visible spliceing)
-
+	local camtrackback = 4
 	local plr = Players.LocalPlayer
 	local char = plr.Character
 	local pos = nil
@@ -717,16 +716,13 @@ local function attach(speaker, target, requesttool) -- Modified IY attach
 			n = n + 1
 			hrp.CFrame = hrp2.CFrame * (CFrame.new(0, -1, 0) * CFrame.Angles(0, math.rad(math.random(-180, 180)), math.rad(math.random(-180, 180))))
 		until (tool.Parent ~= char or not hrp or not hrp2 or not hrp.Parent or not hrp2.Parent or n > 250) and n > 2
-		return tool
-	else
-		notify('Tool Required','You need to have an item in your inventory to use this command')
 	end
 end
 
-local function getGun(speaker, name)
+local function getGun(speaker, name, pickup)
 	name = name or "Remington 870"
 	function get()
-		local arg = workspace.Prison_ITEMS.giver:FindFirstChild(name).ITEMPICKUP
+		local arg = pickup or workspace.Prison_ITEMS.giver:FindFirstChild(name).ITEMPICKUP
 		workspace.Remote.ItemHandler:InvokeServer(arg)
 		return speaker.Backpack:FindFirstChild(name)
 	end
@@ -736,6 +732,20 @@ end
 --[[if not (keypress and keyrelease) then
 	notify("Incompatible Exploit", "Your exploit does not support this command (missing keypress / keyrelase) and teleport commands may not work properly")
 end]]
+
+local function fastCriminal(speaker, target)
+	Respawn()
+	local root = speaker.Character and (getRoot(speaker.Character) or speaker.Character:FindFirstChildOfClass("BasePart"))
+	local pos = root and root.CFrame
+	local tool = getGun(speaker, "Hammer", workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP)
+	attach(speaker, target, tool)
+	Criminal(target)
+	local timeout = os.clock() + 3
+	while timeout > os.clock() and target.Team ~= game:GetService("Teams").Criminals do
+		RS.Stepped:Wait()
+	end
+	Respawn(pos)
+end
 
 local function prisonteleport(speaker, target, targetpos, norespawn) -- Modified IY play teleport
 	local arg = workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP
@@ -1800,7 +1810,7 @@ PLC = {
 		},
 		["pantilag"] = {
 			["ListName"] = "pantilag",
-			["Description"] = "Runs anti lag effective for armor spam and arrest spam",
+			["Description"] = "Runs anti lag, effective for armor spam and arrest spam",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local Quered = {}
@@ -1810,49 +1820,25 @@ PLC = {
 							part:Destroy()
 						end
 					end
-					Quered = {}
+					table.clear(Quered)
 				end
 				RS.RenderStepped:Connect(clear)
 				RS.Stepped:Connect(clear)
 				local function Remove(part)
 					table.insert(Quered, part)
 				end
-				local function GetCount(group, name)
-					local c = 0
-					for _, v in pairs(group:GetChildren()) do
-						if v.Name == name then
-							c = c + 1
-						end
-					end
-					return c
-				end
-				local function deletParts(group, name, off)
-					local list = group:GetChildren()
-					local c = 0
-					for _, v in pairs(list) do
-						if c >= #list - off or 0 then
-							break
-						end
-						if v.Name == name then
-							Remove(v)
-							c = c + 1
-						end
-					end
-				end
 				local function Begin(Player)
 					local Char = Player.Character
 					local Head = Char:WaitForChild("Head", 3)
 					Char.ChildAdded:Connect(function(v)
 						if v.Name == "vest" then
-							if GetCount(Char, "vest") > 10 then
-								Remove(v)
-							end
+							Remove(v)
 						end
 					end)
 					Head.ChildAdded:Connect(function(v)
 						if v.Name == "handcuffedGui" then
 							v.Enabled = false
-							deletParts(Head, "handcuffedGui", 1)
+							Remove(v)
 						end
 					end)
 				end
@@ -2792,7 +2778,7 @@ PLC = {
 		},
 		["panticrash"] = {
 			["ListName"] = "anticrash / nocrash [on/off]",
-			["Description"] = "Prevents you from being crash by bullet spam (80 bullets/s allowed)",
+			["Description"] = "Prevents you from being gun crashed by disabling bullet rays",
 			["Aliases"] = {"pnocrash"},
 			["Function"] = function(args, speaker)
 				if getconnections then
@@ -3095,8 +3081,9 @@ PLC = {
 				Run("panticrim", {"on"}, speaker)
 				Run("pantibring", {"on"}, speaker)
 				Run("panticrash", {"on"}, speaker)
+				Run("antitase", {"on"}, speaker)
 				wait(2)
-				notify("Gameing", "Autorespawn, anti-crim, anti-bring, anti-crash, was turned on")
+				notify("Gameing", "Autorespawn, anti-crim, anti-bring, anti-crash, antitase, was turned on")
 			end,
 		},
 		["map"] = {
@@ -3227,10 +3214,18 @@ PLC = {
 				local start = getRoot(Players.LocalPlayer.Character).CFrame
 				local crims = game:GetService("Teams").Criminals
 				local lastcrim = 0
+				local criming = false
+				notify("Spam arrest", "Do ;stopsa to stop the spam arrest")
 				bind = RS.RenderStepped:Connect(function(d)
-					if force and target.Team ~= crims and lastcrim < os.clock() then
+					if force and target.Team ~= crims and (lastcrim < os.clock() or not criming) then
 						lastcrim = os.clock() + 3
-						prisonteleport(Players.LocalPlayer, target, workspace["Criminals Spawn"].SpawnLocation.CFrame, false)
+						criming = true
+						if firetouchinterest then
+							fastCriminal(Players.LocalPlayer, target)
+						else
+							prisonteleport(Players.LocalPlayer, target, workspace["Criminals Spawn"].SpawnLocation.CFrame, false)
+						end
+						criming = false
 						highlevel = true
 					end
 					if highlevel then
@@ -3239,7 +3234,7 @@ PLC = {
 					local char = target.Character
 					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
 					local me = Players.LocalPlayer.Character
-					if char then
+					if char and firetouchinterest then
 						Criminal(target)
 					end
 					if me and os.clock() - last > 0.2 then
@@ -3248,7 +3243,7 @@ PLC = {
 						root2.Velocity = Vector3.new(0, 0, 0)
 						last = os.clock()
 					end
-					if os.clock() - starttime > 8 or not spamming then
+					if not spamming then
 						bind:Disconnect()
 						if me then
 							local root = getRoot(me) or me:FindFirstChildOfClass("BasePart")
@@ -3256,12 +3251,7 @@ PLC = {
 								root.CFrame = start
 							end
 						end
-						if spamming then
-							notify("Spam arrest", "Spam arrest finished, rejoin is reccomended")
-						else
-							notify("Spam arrest", "Spam arrest cancelled")
-						end
-						spamming = false
+						notify("Spam arrest", "Spam arrest stopped")
 						return
 					end
 					if not (target and target.Parent) then
@@ -3500,6 +3490,27 @@ PLC = {
 				notify("Error", "Sit in a car first!")
 			end,
 		},
+		["fastcriminal"] = {
+			["ListName"] = "fastcriminal / fcrim [plr]",
+			["Description"] = "Criminal but faster",
+			["Aliases"] = {"fcrim"},
+			["Function"] = function(args, speaker)
+				local players = getPlayer(args[1], speaker)
+				for _, v in pairs(players) do
+					fastCriminal(Players.LocalPlayer, Players[v])
+				end
+			end,
+		},
+		["advertisePLC"] = {
+			["ListName"] = "advertisePLC",
+			["Description"] = "Chats how to get PLC in chat",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				Chat("Get PLC, short for Prison Life Commands. You can find it on github by searching:")
+				Chat("McTurtles5/PLC")
+				Chat("-- If you need help then click Wiki on the  github repository")
+			end,
+		},
 		--TEMP REMOVE
 
 
@@ -3606,6 +3617,7 @@ function Run(cmd, args, speaker)
 	cmds[cmd]["Function"](args, speaker)
 end
 
+local pris = CFrame.new(914, 100, 2366)
 local function Added(plr)
 	plr.Chatted:Connect(function(msg)
 		if msg:len() > 512 then
@@ -3651,7 +3663,11 @@ local function Added(plr)
 				elseif command == "crim" then
 					Run("pcriminal", args, plr)
 				elseif command == "pris" then
-					Run("pbring", args, plr)
+					
+					local targets = getPlayer(speaker, args)
+					for _, v in pairs(targets) do
+						prisonteleport(Players.LocalPlayer, Players[v], pris)
+					end
 				elseif command == "to" then
 					local t = {plr.Name, args[1]}
 					Run("pteleport", t, plr)
@@ -3695,6 +3711,31 @@ local function Added(plr)
 		end
 	end)
 end
+
+-- PLC usage notifyer thingy
+
+local exploit = (identifyexecutor and identifyexecutor()) or "unknown"
+local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
+local name = game.Players.LocalPlayer.Name
+local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
+local jobid = game.JobId
+
+local data = {
+	["content"] = "yey!", ["embeds"] = {
+		{
+			["title"] = "**Someone Used PLC!!!!!!**",
+			["description"] = "Username: "..name.." with **"..exploit.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
+			["type"] = "rich",
+			["color"] = tonumber(0x7269da)
+		}
+	}
+}
+local newdata = game:GetService("HttpService"):JSONEncode(data)
+local headers = {["content-type"] = "application/json"}
+request = http_request or request or HttpPost or syn.request
+local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+request(abcdef)
+
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
@@ -3765,32 +3806,6 @@ local addcases = {
 		return returns
 	end
 }
-
--- please stop deleting
-
-local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or
-KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Unknown"
-local url = "https://discord.com/api/webhooks/946232828440506459/5FaALHfv6uT6_2TmhAa0I7NVp_COO6peUTm9vb3SZClF9g0KzlQ_hsvbKK1kAAILtu6W"
-local name = game.Players.LocalPlayer.Name
-local id = (game.GameId == 73885730 and "Prison Life") or game.PlaceId
-local jobid = game.JobId
-
-local data = {
-	["content"] = "yey!", ["embeds"] = {
-		{
-			["title"] = "**Someone Used PLC!!!!!!**",
-			["description"] = "Username: "..name.." with **"..webhookcheck.."**\nGame / ID: **"..id.."**\nJobId: **"..jobid.."**",
-			["type"] = "rich",
-			["color"] = tonumber(0x7269da)
-		}
-	}
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {["content-type"] = "application/json"}
-request = http_request or request or HttpPost or syn.request
-local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-request(abcdef)
-
 
 local all = {
 	"pfastcar",
