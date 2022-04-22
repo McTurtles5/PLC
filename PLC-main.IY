@@ -49,8 +49,8 @@ ge().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Aliases"] = {"autore", "autorespawn"}
 	},
 	["pka"] = {
-		["Name"] = "arua",
-		["Aliases"] = {"killarua", "ka"}
+		["Name"] = "aura",
+		["Aliases"] = {"killaura", "ka"}
 	},
 	["pfastpunch"] = {
 		["Name"] = "fastpunch",
@@ -216,12 +216,12 @@ ge().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Name"] = "unvirus",
 		["Aliases"] = {"cure"}
 	},
-	["pgivearua"] = {
-		["Name"] = "givearua",
+	["pgiveaura"] = {
+		["Name"] = "giveaura",
 		["Aliases"] = {}
 	},
-	["premovearua"] = {
-		["Name"] = "removearua",
+	["premoveaura"] = {
+		["Name"] = "removeaura",
 		["Aliases"] = {}
 	},
 	["pjoinjobid"] = {
@@ -843,7 +843,7 @@ end)
 
 local kacon = nil
 local ka = false
-local function KillArua(speaker)
+local function Killaura(speaker)
 	if not ka then
 		ka = true
 		kacon = RS.Heartbeat:Connect(function()
@@ -930,7 +930,7 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 			if t and root and t ~= whitelisted then
 				local found = getTools(char, whitelisted)
 				for _, tool in pairs(found) do
-					tool.Parent = nil--game.Players.LocalPlayer.Backpack
+					tool.Parent = Players.LocalPlayer.Backpack
 					tool.Name = "waste ("..tool.Name..")"
 				end
 				local current = root.CFrame			
@@ -1482,15 +1482,15 @@ PLC = {
 			["Function"] = function(args, speaker)
 				local arg = args[1]:lower()
 				if arg == "on" then
-					KillArua(speaker)
+					Killaura(speaker)
 					ka = true
-					notify("Enabled", "Killarua was turned on")
+					notify("Enabled", "Killaura was turned on")
 				elseif arg == "off" then
 					if kacon then
 						kacon:Disconnect()
 					end
 					ka = false
-					notify("Disabled", "Killarua was turned off")
+					notify("Disabled", "Killaura was turned off")
 				else
 					notify("Invalid", "Invalid argument. Do 'on/off'")
 				end
@@ -2870,15 +2870,15 @@ PLC = {
 				end
 			end,
 		},
-		["pgivearua"] = {
-			["ListName"] = "givearua [plr]",
-			["Description"] = "Gives kill arua to a player",
+		["pgiveaura"] = {
+			["ListName"] = "giveaura [plr]",
+			["Description"] = "Gives kill aura to a player",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local targets = getPlayer(args[1], speaker)
 				for _, v in ipairs(targets) do
 					local target = Players[v]
-					local name = "GIVE_KILL_ARUA_"..target.Name
+					local name = "GIVE_KILL_aura_"..target.Name
 					local processing = {}
 					local function find(v)
 						for _, i in pairs(processing) do
@@ -2912,15 +2912,15 @@ PLC = {
 				end
 			end,
 		},
-		["premovearua"] = {
-			["ListName"] = "removearua [plr]",
-			["Description"] = "Removes kill arua from a player",
+		["premoveaura"] = {
+			["ListName"] = "removeaura [plr]",
+			["Description"] = "Removes kill aura from a player",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local targets = getPlayer(args[1], speaker)
 				for _, v in ipairs(targets) do
 					local target = Players[v]
-					local name = "GIVE_KILL_ARUA_"..target.Name
+					local name = "GIVE_KILL_aura_"..target.Name
 					UnbindRender(name)
 				end
 			end,
@@ -3259,8 +3259,10 @@ PLC = {
 						spamming = false
 						notify("Spam arrest", "Spam arrest cancelled (player left)")
 					end
-					for _ = 1, level do
-						arrest(root)
+					if target.Team == game:GetService("Teams").Criminals then
+						for _ = 1, level do
+							arrest(root)
+						end
 					end
 				end)
 			end,
@@ -3511,6 +3513,60 @@ PLC = {
 				Chat("-- If you need help then click Wiki on the  github repository")
 			end,
 		},
+		["arrestaura"] = {
+			["ListName"] = "arrestaura / aa",
+			["Description"] = "Arrests players near you",
+			["Aliases"] = {"aa"},
+			["Function"] = function(args, speaker)
+				local arg = args[1]:lower()
+				if arg == "on" then
+					local Teams = game:GetService("Teams")
+					RebindRender("ARREST_aura", function()
+						for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
+							if (plr.Team == Teams.Inmates or plr.Team == Teams.Criminals) and IsAlive(plr) and IsClose(plr, speaker) and plr ~= speaker then
+								local root = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+								coroutine.resume(coroutine.create(function()
+									workspace.Remote.arrest:InvokeServer(root)
+								end))
+							end
+						end
+					end)
+					notify("Enabled", "Arrest aura was enabled")
+				elseif arg == "off" then
+					UnbindRender("ARREST_aura")
+					notify("Disabled", "Arrest aura was disabled")
+				else
+					notify("Invalid", "Invalid argument. Do 'on/off'")
+				end
+			end,
+		},
+		["antiarrest"] = {
+			["ListName"] = "antiarrest / noarrest",
+			["Description"] = "Prevents the arrest animation when you get arrested",
+			["Aliases"] = {"noarrest"},
+			["Function"] = function(args, speaker)
+				if getconnections then
+					local arg = tostring(args[1]):lower()
+					if arg == "on" then
+						local ev = workspace.Remote.arrestPlayer.OnClientEvent
+						RebindRender("ANTI_ARREST", function()
+							local connections = getconnections(ev)
+							for _, con in pairs(connections) do
+								con:Disable()
+							end
+						end)
+						notify("Enabled", "Anti-arrest was enabled")
+					elseif arg == "off" then
+						UnbindRender("ANTI_ARREST")
+						notify("Disabled", "Anti-arrest was disabled")
+					else
+						notfiy("Invalid", "Invalid argument. Do 'on/off'")
+					end
+				else
+					notify("Incompatible Exploit", "Your exploit does not support this command (missing getconnections) and anti-tase will not work")
+				end
+			end,
+		},
 		--TEMP REMOVE
 
 
@@ -3555,14 +3611,16 @@ PLC = {
 	},
 }
 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/usagenotify"))()
+
 local Prefix = ":"
 --[[
 
 local BasicList = {
 	"List of commands, <PRE>crim -Makes the player a crim, <PRE>pris -Brings you to the hosts position, <PRE>death -Toggles loud noise, <PRE>tp -Teleports a player to a player",
 	"<PRE>goto -Teleports you to a player, <PRE>bring -Brings a player, <PRE>tase -Tases a player, <PRE>k -Ends a player, <PRE>sk -Ends a player but slower",
-	", <PRE>arrest -Arrests a player, <PRE>virus -Makes a player like a lava brick <PRE>arua -Gives the player a deadly arua <PRE>unvirus -Removes virus from a player",
-	"<PRE>unarua - Removes arua from a player"
+	", <PRE>arrest -Arrests a player, <PRE>virus -Makes a player like a lava brick <PRE>aura -Gives the player a deadly aura <PRE>unvirus -Removes virus from a player",
+	"<PRE>unaura - Removes aura from a player"
 }
 local SuperList = {
 	"List of super commands, <PRE>crash -Trys to crash the everyone, <PRE>admin -Adds people to admin list, <PRE>unadmin -Removes a players admin",
@@ -3573,7 +3631,7 @@ local SuperList = {
 -- Simplified
 local BasicList = {
 	"List of commands, <PRE>crim [plr] <PRE>pris [plr] <PRE>death <PRE>tp [plr] [plr to] <PRE>goto [plr] <PRE>bring [plr] <PRE>tase [plr] <PRE>k [plr]",
-	"<PRE>arrest [plr] <PRE>virus [plr] <PRE>ka [plr] <PRE>unvirus [plr] <PRE>oka [plr] <PRE>key [plr]"
+	"<PRE>arrest [plr] <PRE>virus [plr] <PRE>aura [plr] <PRE>unvirus [plr] <PRE>unaura [plr] <PRE>key [plr]"
 }
 local SuperList = {
 	"List of super commands, <PRE>crash <PRE>admin [plr] <PRE>unadmin [plr]",
@@ -3581,7 +3639,7 @@ local SuperList = {
 local CommandInfo = {
 	["crim"] = "Makes [plr] a criminal",
 	["pris"] = "Teleports [plr] to the host (me)",
-	["death"] = "Toggles a loud noise",
+	["loud"] = "Toggles a loud noise",
 	["tp"] = "Teleports [plr] to [plr to]",
 	["to"] = "Teleports you to [plr]",
 	["bring"] = "Brings [plr] to you",
@@ -3589,9 +3647,9 @@ local CommandInfo = {
 	["k"] = "Will kill [plr]",
 	["arrest"] = "Will try to arrest [plr]",
 	["virus"] = "Players will die upon collideing with [plr]",
-	["ka"] = "Players will die when they are close to [plr]",
+	["aura"] = "Players will die when they are close to [plr]",
 	["unvirus"] = "Removes virus from [plr]",
-	["oka"] = "Removes ka from [plr]",
+	["unaura"] = "Removes aura from [plr]",
 	["key"] = "Gives a keycard to [plr]",
 	["admin"] = "(ONLY FOR SUPER ADMINS) Gives admin to [plr]",
 	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]"
@@ -3658,7 +3716,7 @@ local function Added(plr)
 							Chat("/w "..plr.Name.." "..cmd, "All")
 						end
 					end
-				elseif command == "death" then
+				elseif command == "loud" then
 					Run("pearape")
 				elseif command == "crim" then
 					Run("pcriminal", args, plr)
@@ -3687,10 +3745,10 @@ local function Added(plr)
 					Run("pvirus", args, plr)
 				elseif command == "unvirus" then
 					Run("punvirus", args, plr)
-				elseif command == "ka" then
-					Run("pgivearua", args, plr)
-				elseif command == "oka" then
-					Run("premovearua", args, plr)
+				elseif command == "aura" then
+					Run("pgiveaura", args, plr)
+				elseif command == "unaura" then
+					Run("premoveaura", args, plr)
 				elseif command == "key" then
 					Run("pkey", args, plr)
 				end
@@ -3711,10 +3769,6 @@ local function Added(plr)
 		end
 	end)
 end
-
--- PLC usage notifyer thingy
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/usagenotify"))()
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
