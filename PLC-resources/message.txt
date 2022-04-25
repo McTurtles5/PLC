@@ -1,0 +1,483 @@
+-- Gui to Lua
+-- Version: 3.2
+
+-- Instances:
+
+local PLCgui = Instance.new("ScreenGui")
+local PLC = Instance.new("Frame")
+local Main = Instance.new("Frame")
+local Tabs = Instance.new("Frame")
+local rage = Instance.new("TextButton")
+local tps = Instance.new("TextButton")
+local plrs = Instance.new("TextButton")
+local misc = Instance.new("TextButton")
+local other = Instance.new("TextButton")
+local guns = Instance.new("TextButton")
+local mods = Instance.new("TextButton")
+local loadouts = Instance.new("TextButton")
+local Menu = Instance.new("Frame")
+local rage_2 = Instance.new("Frame")
+local plrs_2 = Instance.new("Frame")
+local bring = Instance.new("TextButton")
+local arrest = Instance.new("TextButton")
+local kill = Instance.new("TextButton")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local TextLabel = Instance.new("TextLabel")
+local crim = Instance.new("TextButton")
+local tase = Instance.new("TextButton")
+local key = Instance.new("TextButton")
+local all = Instance.new("TextButton")
+local tps_2 = Instance.new("Frame")
+local misc_2 = Instance.new("Frame")
+local other_2 = Instance.new("Frame")
+local welcome = Instance.new("Frame")
+local TextLabel_2 = Instance.new("TextLabel")
+local TextLabel_3 = Instance.new("TextLabel")
+local warn = Instance.new("TextLabel")
+local guns_2 = Instance.new("Frame")
+local mods_2 = Instance.new("Frame")
+local loadouts_2 = Instance.new("Frame")
+local Loader = Instance.new("Frame")
+local PLClogo = Instance.new("ImageLabel")
+local bar = Instance.new("Frame")
+local inner = Instance.new("Frame")
+local status = Instance.new("TextLabel")
+
+--Properties:
+
+PLCgui.Name = "PLC gui"
+PLCgui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+PLCgui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+PLC.Name = "PLC"
+PLC.Parent = PLCgui
+PLC.AnchorPoint = Vector2.new(0.5, 0.5)
+PLC.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+PLC.BackgroundTransparency = 1.000
+PLC.ClipsDescendants = true
+PLC.Position = UDim2.new(0.5, 0, 0.5, 0)
+PLC.Size = UDim2.new(0.52, 0, 0.493000001, 0)
+
+Main.Name = "Main"
+Main.Parent = PLC
+Main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Main.BorderSizePixel = 0
+Main.Size = UDim2.new(1, 0, 1, 0)
+
+Tabs.Name = "Tabs"
+Tabs.Parent = Main
+Tabs.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Tabs.BorderSizePixel = 0
+Tabs.Size = UDim2.new(1, 0, 0.0799999982, 0)
+
+rage.Name = "rage"
+rage.Parent = Tabs
+rage.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+rage.BorderSizePixel = 0
+rage.Size = UDim2.new(0.125, 0, 1, 0)
+rage.Font = Enum.Font.SourceSans
+rage.Text = "Rage"
+rage.TextColor3 = Color3.fromRGB(255, 255, 255)
+rage.TextSize = 14.000
+
+tps.Name = "tps"
+tps.Parent = Tabs
+tps.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+tps.BorderSizePixel = 0
+tps.Position = UDim2.new(0.25, 0, 0, 0)
+tps.Size = UDim2.new(0.125, 0, 1, 0)
+tps.Font = Enum.Font.SourceSans
+tps.Text = "Teleports"
+tps.TextColor3 = Color3.fromRGB(255, 255, 255)
+tps.TextSize = 14.000
+
+plrs.Name = "plrs"
+plrs.Parent = Tabs
+plrs.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+plrs.BorderSizePixel = 0
+plrs.Position = UDim2.new(0.125, 0, 0, 0)
+plrs.Size = UDim2.new(0.125, 0, 1, 0)
+plrs.Font = Enum.Font.SourceSans
+plrs.Text = "Players"
+plrs.TextColor3 = Color3.fromRGB(255, 255, 255)
+plrs.TextSize = 14.000
+
+misc.Name = "misc"
+misc.Parent = Tabs
+misc.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+misc.BorderSizePixel = 0
+misc.Position = UDim2.new(0.75, 0, 0, 0)
+misc.Size = UDim2.new(0.125, 0, 1, 0)
+misc.Font = Enum.Font.SourceSans
+misc.Text = "Misc"
+misc.TextColor3 = Color3.fromRGB(255, 255, 255)
+misc.TextSize = 14.000
+
+other.Name = "other"
+other.Parent = Tabs
+other.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+other.BorderSizePixel = 0
+other.Position = UDim2.new(0.875, 0, 0, 0)
+other.Size = UDim2.new(0.125, 0, 1, 0)
+other.Font = Enum.Font.SourceSans
+other.Text = "Other"
+other.TextColor3 = Color3.fromRGB(255, 255, 255)
+other.TextSize = 14.000
+
+guns.Name = "guns"
+guns.Parent = Tabs
+guns.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+guns.BorderSizePixel = 0
+guns.Position = UDim2.new(0.375, 0, 0, 0)
+guns.Size = UDim2.new(0.125, 0, 1, 0)
+guns.Font = Enum.Font.SourceSans
+guns.Text = "Wepons"
+guns.TextColor3 = Color3.fromRGB(255, 255, 255)
+guns.TextSize = 14.000
+
+mods.Name = "mods"
+mods.Parent = Tabs
+mods.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+mods.BorderSizePixel = 0
+mods.Position = UDim2.new(0.5, 0, 0, 0)
+mods.Size = UDim2.new(0.125, 0, 1, 0)
+mods.Font = Enum.Font.SourceSans
+mods.Text = "Gunmods"
+mods.TextColor3 = Color3.fromRGB(255, 255, 255)
+mods.TextSize = 14.000
+
+loadouts.Name = "loadouts"
+loadouts.Parent = Tabs
+loadouts.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+loadouts.BorderSizePixel = 0
+loadouts.Position = UDim2.new(0.625, 0, 0, 0)
+loadouts.Size = UDim2.new(0.125, 0, 1, 0)
+loadouts.Font = Enum.Font.SourceSans
+loadouts.Text = "Loadouts"
+loadouts.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadouts.TextSize = 14.000
+
+Menu.Name = "Menu"
+Menu.Parent = Main
+Menu.BackgroundColor3 = Color3.fromRGB(36, 36, 37)
+Menu.BorderSizePixel = 0
+Menu.Position = UDim2.new(0, 0, 0.0799999982, 0)
+Menu.Size = UDim2.new(1, 0, 0.920000017, 0)
+
+rage_2.Name = "rage"
+rage_2.Parent = Menu
+rage_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+rage_2.BackgroundTransparency = 1.000
+rage_2.BorderSizePixel = 0
+rage_2.Size = UDim2.new(1, 0, 1, 0)
+rage_2.Visible = false
+
+plrs_2.Name = "plrs"
+plrs_2.Parent = Menu
+plrs_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+plrs_2.BackgroundTransparency = 1.000
+plrs_2.BorderSizePixel = 0
+plrs_2.Size = UDim2.new(1, 0, 1, 0)
+
+bring.Name = "bring"
+bring.Parent = plrs_2
+bring.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+bring.BorderSizePixel = 0
+bring.Position = UDim2.new(0.0362047404, 0, 0.215096951, 0)
+bring.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+bring.Font = Enum.Font.SourceSans
+bring.Text = "Bring"
+bring.TextColor3 = Color3.fromRGB(255, 255, 255)
+bring.TextSize = 14.000
+
+arrest.Name = "arrest"
+arrest.Parent = plrs_2
+arrest.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+arrest.BorderSizePixel = 0
+arrest.Position = UDim2.new(0.0362047404, 0, 0.306871653, 0)
+arrest.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+arrest.Font = Enum.Font.SourceSans
+arrest.Text = "Arrest"
+arrest.TextColor3 = Color3.fromRGB(255, 255, 255)
+arrest.TextSize = 14.000
+
+kill.Name = "kill"
+kill.Parent = plrs_2
+kill.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+kill.BorderSizePixel = 0
+kill.Position = UDim2.new(0.0362047404, 0, 0.123322248, 0)
+kill.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+kill.Font = Enum.Font.SourceSans
+kill.Text = "Kill"
+kill.TextColor3 = Color3.fromRGB(255, 255, 255)
+kill.TextSize = 14.000
+
+ScrollingFrame.Parent = plrs_2
+ScrollingFrame.Active = true
+ScrollingFrame.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.Position = UDim2.new(0.46962142, 0, 0.0516232625, 0)
+ScrollingFrame.Size = UDim2.new(0.507661819, 0, 0.895361841, 0)
+ScrollingFrame.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+ScrollingFrame.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+
+TextLabel.Parent = plrs_2
+TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.BorderSizePixel = 0
+TextLabel.Position = UDim2.new(0.0362047404, 0, 0.559252083, 0)
+TextLabel.Size = UDim2.new(0.249687865, 0, 0.0229436737, 0)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.TextSize = 14.000
+
+crim.Name = "crim"
+crim.Parent = plrs_2
+crim.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+crim.BorderSizePixel = 0
+crim.Position = UDim2.new(0.0362047404, 0, 0.398646295, 0)
+crim.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+crim.Font = Enum.Font.SourceSans
+crim.Text = "Criminal"
+crim.TextColor3 = Color3.fromRGB(255, 255, 255)
+crim.TextSize = 14.000
+
+tase.Name = "tase"
+tase.Parent = plrs_2
+tase.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+tase.BorderSizePixel = 0
+tase.Position = UDim2.new(0.0362047404, 0, 0.490420967, 0)
+tase.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+tase.Font = Enum.Font.SourceSans
+tase.Text = "Tase"
+tase.TextColor3 = Color3.fromRGB(255, 255, 255)
+tase.TextSize = 14.000
+
+key.Name = "key"
+key.Parent = plrs_2
+key.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+key.BorderSizePixel = 0
+key.Position = UDim2.new(0.0362047404, 0, 0.58219564, 0)
+key.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+key.Font = Enum.Font.SourceSans
+key.Text = "Key"
+key.TextColor3 = Color3.fromRGB(255, 255, 255)
+key.TextSize = 14.000
+
+all.Name = "all"
+all.Parent = plrs_2
+all.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+all.BorderSizePixel = 0
+all.Position = UDim2.new(0.364544272, 0, 0.0544912517, 0)
+all.Size = UDim2.new(0.0810249001, 0, 0.0688310191, 0)
+all.Font = Enum.Font.SourceSans
+all.Text = "All"
+all.TextColor3 = Color3.fromRGB(255, 255, 255)
+all.TextSize = 14.000
+
+tps_2.Name = "tps"
+tps_2.Parent = Menu
+tps_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+tps_2.BackgroundTransparency = 1.000
+tps_2.BorderSizePixel = 0
+tps_2.Size = UDim2.new(1, 0, 1, 0)
+tps_2.Visible = false
+
+misc_2.Name = "misc"
+misc_2.Parent = Menu
+misc_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+misc_2.BackgroundTransparency = 1.000
+misc_2.BorderSizePixel = 0
+misc_2.Size = UDim2.new(1, 0, 1, 0)
+misc_2.Visible = false
+
+other_2.Name = "other"
+other_2.Parent = Menu
+other_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+other_2.BackgroundTransparency = 1.000
+other_2.BorderSizePixel = 0
+other_2.Size = UDim2.new(1, 0, 1, 0)
+other_2.Visible = false
+
+welcome.Name = "welcome"
+welcome.Parent = Menu
+welcome.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+welcome.BackgroundTransparency = 1.000
+welcome.BorderSizePixel = 0
+welcome.Size = UDim2.new(1, 0, 1, 0)
+welcome.Visible = false
+
+TextLabel_2.Parent = welcome
+TextLabel_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_2.BackgroundTransparency = 1.000
+TextLabel_2.BorderSizePixel = 0
+TextLabel_2.Position = UDim2.new(0.158551797, 0, 0.200757146, 0)
+TextLabel_2.Size = UDim2.new(0.335830182, 0, 0.41298613, 0)
+TextLabel_2.Font = Enum.Font.SourceSans
+TextLabel_2.Text = "PLC"
+TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_2.TextSize = 100.000
+TextLabel_2.TextXAlignment = Enum.TextXAlignment.Left
+
+TextLabel_3.Parent = welcome
+TextLabel_3.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_3.BackgroundTransparency = 1.000
+TextLabel_3.BorderSizePixel = 0
+TextLabel_3.Position = UDim2.new(0.158551812, 0, 0.6148507, 0)
+TextLabel_3.Size = UDim2.new(0.725093722, 0, 0.107875109, 0)
+TextLabel_3.Font = Enum.Font.SourceSans
+TextLabel_3.Text = " Welcome to PLC ui, click on a tab to start"
+TextLabel_3.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel_3.TextSize = 22.000
+TextLabel_3.TextXAlignment = Enum.TextXAlignment.Left
+
+warn.Name = "warn"
+warn.Parent = welcome
+warn.AnchorPoint = Vector2.new(1, 1)
+warn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+warn.BackgroundTransparency = 1.000
+warn.BorderSizePixel = 0
+warn.Position = UDim2.new(1, 0, 1, 0)
+warn.Size = UDim2.new(1, 0, 0.200000003, 0)
+warn.Visible = false
+warn.Font = Enum.Font.SourceSans
+warn.Text = "Mobile detected. All fetures may not work."
+warn.TextColor3 = Color3.fromRGB(255, 0, 0)
+warn.TextSize = 30.000
+
+guns_2.Name = "guns"
+guns_2.Parent = Menu
+guns_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+guns_2.BackgroundTransparency = 1.000
+guns_2.BorderSizePixel = 0
+guns_2.Size = UDim2.new(1, 0, 1, 0)
+guns_2.Visible = false
+
+mods_2.Name = "mods"
+mods_2.Parent = Menu
+mods_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+mods_2.BackgroundTransparency = 1.000
+mods_2.BorderSizePixel = 0
+mods_2.Size = UDim2.new(1, 0, 1, 0)
+mods_2.Visible = false
+
+loadouts_2.Name = "loadouts"
+loadouts_2.Parent = Menu
+loadouts_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+loadouts_2.BackgroundTransparency = 1.000
+loadouts_2.BorderSizePixel = 0
+loadouts_2.Size = UDim2.new(1, 0, 1, 0)
+loadouts_2.Visible = false
+
+Loader.Name = "Loader"
+Loader.Parent = PLC
+Loader.BackgroundColor3 = Color3.fromRGB(36, 36, 37)
+Loader.BorderSizePixel = 0
+Loader.Size = UDim2.new(1, 0, 1, 0)
+Loader.ZIndex = 2
+
+PLClogo.Name = "PLClogo"
+PLClogo.Parent = Loader
+PLClogo.AnchorPoint = Vector2.new(0.5, 0)
+PLClogo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+PLClogo.BackgroundTransparency = 1.000
+PLClogo.Position = UDim2.new(0.5, 0, 0, 0)
+PLClogo.Size = UDim2.new(0.600000024, 0, 0.649999976, 0)
+PLClogo.Image = "http://www.roblox.com/asset/?id=9452223937"
+
+bar.Name = "bar"
+bar.Parent = Loader
+bar.AnchorPoint = Vector2.new(0.5, 0.5)
+bar.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+bar.BorderSizePixel = 0
+bar.Position = UDim2.new(0.5, 0, 0.628000021, 0)
+bar.Size = UDim2.new(0.5, 0, 0.0379999988, 0)
+
+inner.Name = "inner"
+inner.Parent = bar
+inner.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+inner.BorderSizePixel = 0
+inner.Size = UDim2.new(0, 0, 1, 0)
+
+status.Name = "status"
+status.Parent = Loader
+status.AnchorPoint = Vector2.new(0, 1)
+status.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+status.BackgroundTransparency = 1.000
+status.Position = UDim2.new(0, 0, 0.74000001, 0)
+status.Size = UDim2.new(1, 0, 0.063000001, 0)
+status.Font = Enum.Font.Code
+status.Text = "loading status here"
+status.TextColor3 = Color3.fromRGB(255, 255, 255)
+status.TextScaled = true
+status.TextSize = 14.000
+status.TextWrapped = true
+
+-- Scripts:
+
+local function WYOXRZT_fake_script() -- PLC.loaderscript 
+	local script = Instance.new('LocalScript', PLC)
+
+	local UI = script.Parent
+	local loadingFrame = UI.Loader
+	local bar = loadingFrame.bar.inner
+	
+	local function setProgress(x)
+		bar:TweenSize(UDim2.new(x, 0, 1, 0), 1, 5, math.abs(x - bar.Size.X.Scale) / 0.8, true)
+	end
+	
+	for i = 0, 5 do
+		setProgress(i * 0.2)
+		wait(1)
+	end
+	
+	loadingFrame.status.Text = "insert random string"
+	
+	wait(1.5)
+	
+	UI.Main.Visible = true
+	
+	loadingFrame:TweenPosition(UDim2.new(-1, 0, 0, 0), 1, 5, 0.8)
+	
+	wait(0.8)
+	
+	loadingFrame:Destroy()
+end
+coroutine.wrap(WYOXRZT_fake_script)()
+local function ETZR_fake_script() -- PLC.LocalScript 
+	local script = Instance.new('LocalScript', PLC)
+
+	local UIS = game:GetService("UserInputService")
+	
+	local Main = script.Parent.Main
+	local IsMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+	
+	if IsMobile then
+		Main.Menu.welcome.warn.Visible = true
+	end
+	
+	for _, button in pairs(Main.Tabs:GetChildren()) do
+		if button:IsA("TextButton") then
+			button.MouseButton1Click:Connect(function()
+				for _, button2 in pairs(Main.Tabs:GetChildren()) do
+					if button2:IsA("TextButton") then
+						if button2 == button then
+							button2.BackgroundColor3 = Color3.fromRGB(36, 36, 37)
+						else
+							button2.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+						end
+					end
+				end
+				for _, frame in pairs(Main.Menu:GetChildren()) do
+					if frame:IsA("Frame") then
+						if frame.Name == button.Name then
+							frame.Visible = true
+						else
+							frame.Visible = false
+						end
+					end
+				end
+			end)
+		end
+	end
+end
+coroutine.wrap(ETZR_fake_script)()
