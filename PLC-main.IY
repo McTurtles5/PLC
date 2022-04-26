@@ -3567,6 +3567,15 @@ PLC = {
 				end
 			end,
 		},
+["cmdsPLC"] = {
+["ListName"] = "cmdsPLC",
+["Description"] = "Currently not functional",
+["Aliases"] = {},
+["Function"] = function(args, speaker)
+maximizeHolder()
+
+end,
+},
 		--TEMP REMOVE
 
 
