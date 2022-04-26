@@ -3574,9 +3574,15 @@ PLC = {
 ["Function"] = function(args, speaker)
 maximizeHolder()
 local y = nil
-
+for _, e in pairs(CMDsF:GetChildren()) do
+if e.Text == "-- PRISON COMMANDS" then
+y = e.AbsolutePosition.Y
+break
+end
+end
 if y then
-CMDsF.CanvasPosition = Vector2.new(y, 0)
+local t = game:GetService("TweenService"):Create()
+CMDsF.CanvasPosition = Vector2.new(y + 5, 0)
 end
 end,
 },
