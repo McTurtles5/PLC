@@ -3573,7 +3573,11 @@ PLC = {
 ["Aliases"] = {},
 ["Function"] = function(args, speaker)
 maximizeHolder()
+local y = nil
 
+if y then
+CMDsF.CanvasPosition = Vector2.new(y, 0)
+end
 end,
 },
 		--TEMP REMOVE
