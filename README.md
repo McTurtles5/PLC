@@ -1,3 +1,7 @@
+# Temporarily discontinued
+
+- PLC will continue to work, but will not have any updates
+
 # PLC
 
 - Prison Life Commands. For infinite yield.
