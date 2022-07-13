@@ -1,7 +1,7 @@
 function ge() return getgenv() end
 
 local latestver = tonumber(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/latestversion"))
-local currentver = tonumber(PLCver)
+local currentver = PLCver
 
 if not currentver or latestver > currentver then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/updater"))()
