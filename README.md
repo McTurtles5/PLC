@@ -1,6 +1,6 @@
 # Temporarily discontinued
 
-- PLC will continue to work, but will not have any updates. [Details.](https://github.com/McTurtles5/PLC/wiki/Temporarily-discontinued)
+- PLC will continue to work, but will not have any major updates. [Details.](https://github.com/McTurtles5/PLC/wiki/Temporarily-discontinued)
 
 # PLC
 
