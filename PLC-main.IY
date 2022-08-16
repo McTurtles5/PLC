@@ -3865,7 +3865,8 @@ local all = {
 	"pjoinjobid",
 	"pantibring",
 	"joincommand",
-	"nocollide"
+	"nocollide",
+	"unnocollide"
 }
 
 if not isPL then
