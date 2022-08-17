@@ -3632,7 +3632,7 @@ end,
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/usagenotify"))()
 
-local prefix = ge().PLCdata.admin.prefix
+local prefix = ":"
 --[[
 
 local BasicList = {
@@ -3649,11 +3649,11 @@ local SuperList = {
 
 -- Simplified
 local BasicList = {
-	"List of commands, <PRE>crim [plr] <PRE>pris [plr] <PRE>death <PRE>tp [plr] [plr to] <PRE>goto [plr] <PRE>bring [plr] <PRE>tase [plr] <PRE>k [plr]",
-	"<PRE>arrest [plr] <PRE>virus [plr] <PRE>aura [plr] <PRE>unvirus [plr] <PRE>unaura [plr] <PRE>key [plr]"
+	"List of commands, %scrim [plr] %spris [plr] %sdeath %stp [plr] [plr to] %sgoto [plr] %sbring [plr] %stase [plr] %sk [plr]",
+	"%sarrest [plr] %svirus [plr] %saura [plr] %sunvirus [plr] %sunaura [plr] %skey [plr]"
 }
 local SuperList = {
-	"List of super commands, <PRE>crash <PRE>admin [plr] <PRE>unadmin [plr]",
+	"List of super commands, %scrash %sadmin [plr] %sunadmin [plr]",
 }
 local CommandInfo = {
 	["crim"] = "Makes [plr] a criminal",
@@ -3678,12 +3678,12 @@ local Prefix = prefix
 
 for i, cmd in pairs(BasicList) do
 	if cmd then
-		BasicList[i] = table.concat(cmd:split("<PRE>"), Prefix)
+		BasicList[i] = string.format(cmd, Prefix)
 	end
 end
 for i, cmd in pairs(SuperList) do
 	if cmd then
-		SuperList[i] = table.concat(cmd:split("<PRE>"), Prefix)
+		SuperList[i] = string.format(cmd, Prefix)
 	end
 end
 
