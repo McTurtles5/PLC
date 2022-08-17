@@ -42,11 +42,13 @@ ge().PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone a
 ge().PLCdata.admin.prefix = ":" -- The give admin prefix
 
 local ret = nil
-local worked = pcall(function()
+local worked, error = pcall(function()
 	ret = loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-main.IY"))()
 end)
 
 if not worked then
+	print("PLC CRITICAL ERROR", error)
+	notify("CRITICAL ERROR", "PLC has encountered a critical error and will try to auto update.")
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/updater"))()
 	return
 end
