@@ -3632,7 +3632,7 @@ end,
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/usagenotify"))()
 
-local Prefix = ":"
+local prefix = ge().PLCdata.admin.prefix
 --[[
 
 local BasicList = {
@@ -3685,7 +3685,6 @@ for i, cmd in pairs(SuperList) do
 	end
 end
 
-local prefix = ge().PLCdata.admin.prefix
 local cmds = {}
 for n, d in pairs(PLC["Commands"]) do
 	cmds[n] = d
