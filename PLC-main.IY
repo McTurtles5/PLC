@@ -3699,6 +3699,7 @@ end
 local pris = CFrame.new(914, 100, 2366)
 local function Added(plr)
 	plr.Chatted:Connect(function(msg)
+		print("chatted")
 		if msg:len() > 512 then
 			return
 		end
