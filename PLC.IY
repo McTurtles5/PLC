@@ -1,4 +1,4 @@
--- I'd reccomend using Downloader.txt
+-- I'd reccomend using Downloader.txt to download PLC
 
 local bypassMaintenance = false
 
@@ -27,7 +27,6 @@ ge().PLCdata = ge().PLCdata or {} -- DO NOT REMOVE
 ge().PLCdata.fastbring = false -- If you want fastbring or normal bring (I recommend normal bring) [true/false]
 
 ge().PLCdata.admin = {} -- DO NOT REMOVE
-ge().PLCdata.admin.everyone = false -- If you want everyone to be admin
 ge().PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
 	"gamer",
 	"gamerII",
@@ -35,11 +34,6 @@ ge().PLCdata.admin.admins = { -- People you want to ALWAYS be admin (Username)
 ge().PLCdata.admin.superadmins = { -- People you want to ALWAYS be super admin (Username)
 	"Epicgamer",
 }
-ge().PLCdata.admin.blacklisted = { -- People you want to EXCULDE from everyone admin (Username)
-	"annoyingnoob",
-}
-
-ge().PLCdata.admin.prefix = ":" -- The give admin prefix
 
 local ret = nil
 local worked, error = pcall(function()
