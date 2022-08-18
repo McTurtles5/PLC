@@ -48,8 +48,8 @@ end)
 
 if not worked then
 	print("PLC CRITICAL ERROR", error)
-	notify("CRITICAL ERROR", "PLC has encountered a critical error and will try to auto update.")
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/updater"))()
+	notify("CRITICAL ERROR", "PLC has encountered a critical error, try updating or try again later.")
+	wait(5)
 	return
 end
 
