@@ -3697,19 +3697,14 @@ function Run(cmd, args, speaker)
 end
 
 local pris = CFrame.new(914, 100, 2366)
-local function Added(plr)
-print('added', plr)
+function Added(plr)
 	plr.Chatted:Connect(function(msg)
 	print(pcall(function()
-		print("chatted")
 		if msg:len() > 512 then
 			return
 		end
 		local isSuper = table.find(ge().PLCdata.admin.superadmins, plr.Name)
 		local isBasic = isSuper or table.find(ge().PLCdata.admin.admins, plr.Name)
-		print(msg)
-		print(plr)
-		print(basic, super)
 		if isBasic then
 			local isLoudPrefix = string.sub(msg, 1, Prefix:len()):lower() == Prefix
 			local isSilentrefix = string.sub(msg, 1, Prefix:len() + 3):lower() == "/e "..Prefix
