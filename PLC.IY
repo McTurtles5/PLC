@@ -1,6 +1,6 @@
 -- I'd reccomend using Downloader.txt to download PLC
 
-local bypassMaintenance = false
+local bypassMaintenance = false -- Bypassing maintenance may cause the script to not work properly while in maintenance
 
 local url = "https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/maintenance"
 local maintenanceInfo = game:GetService("HttpService"):JSONDecode(game:HttpGet(url))
