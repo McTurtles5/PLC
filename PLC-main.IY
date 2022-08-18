@@ -3674,7 +3674,7 @@ local CommandInfo = {
 	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]"
 }
 
-local Prefix = prefix
+local Prefix = ":"
 
 for i, cmd in pairs(BasicList) do
 	if cmd then
