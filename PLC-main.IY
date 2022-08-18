@@ -3794,7 +3794,7 @@ print('added', plr)
 				end
 			end
 		end
-		end)
+		end))
 	end)
 end
 
