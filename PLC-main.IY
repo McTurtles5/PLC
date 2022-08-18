@@ -3704,6 +3704,9 @@ local function Added(plr)
 		end
 		local isSuper = table.find(ge().PLCdata.admin.superadmins, plr.Name)
 		local isBasic = (ge().PLCdata.admin.everyone and not table.find(ge().PLCdata.admin.blacklisted, plr.Name)) or table.find(ge().PLCdata.admin.admins, plr.Name) or isSuper
+		print(msg)
+		print(plr)
+		print(basic, super)
 		if isBasic then
 			local isLoudPrefix = string.sub(msg, 1, Prefix:len()):lower() == Prefix
 			local isSilentrefix = string.sub(msg, 1, Prefix:len() + 3):lower() == "/e "..Prefix
