@@ -3684,7 +3684,7 @@ for i, cmd in pairs(BasicList) do
 end
 for i, cmd in pairs(SuperList) do
 	if cmd then
-		SuperList[i] = string.gsub(cmd, "<PRE>", Prefix))
+		SuperList[i] = string.gsub(cmd, "<PRE>", Prefix)
 	end
 end
 
