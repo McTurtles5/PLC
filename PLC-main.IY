@@ -3649,11 +3649,11 @@ local SuperList = {
 
 -- Simplified
 local BasicList = {
-	"List of commands, %scrim [plr] %spris [plr] %sdeath %stp [plr] [plr to] %sgoto [plr] %sbring [plr] %stase [plr] %sk [plr]",
-	"%sarrest [plr] %svirus [plr] %saura [plr] %sunvirus [plr] %sunaura [plr] %skey [plr]"
+	"List of commands, <PRE>crim [plr] <PRE>pris [plr] <PRE>death <PRE>tp [plr] [plr to] <PRE>goto [plr] <PRE>bring [plr] <PRE>tase [plr] <PRE>k [plr]",
+	"<PRE>arrest [plr] <PRE>virus [plr] <PRE>aura [plr] <PRE>unvirus [plr] <PRE>unaura [plr] <PRE>key [plr]"
 }
 local SuperList = {
-	"List of super commands, %scrash %sadmin [plr] %sunadmin [plr]",
+	"List of super commands, <PRE>crash <PRE>admin [plr] <PRE>unadmin [plr]",
 }
 local CommandInfo = {
 	["crim"] = "Makes [plr] a criminal",
@@ -3671,19 +3671,20 @@ local CommandInfo = {
 	["unaura"] = "Removes aura from [plr]",
 	["key"] = "Gives a keycard to [plr]",
 	["admin"] = "(ONLY FOR SUPER ADMINS) Gives admin to [plr]",
-	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]"
+	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]",
+	["crash"] = "(ONLY FOR SUPER ADMINS) Crashes every client in the server"
 }
 
-local Prefix = ":"
+local Prefix = prefix
 
 for i, cmd in pairs(BasicList) do
 	if cmd then
-		BasicList[i] = string.format(cmd, Prefix)
+		BasicList[i] = string.gsub(cmd, "<PRE>", Prefix)
 	end
 end
 for i, cmd in pairs(SuperList) do
 	if cmd then
-		SuperList[i] = string.format(cmd, Prefix)
+		SuperList[i] = string.gsub(cmd, "<PRE>", Prefix))
 	end
 end
 
