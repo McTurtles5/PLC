@@ -3704,7 +3704,7 @@ local function Added(plr)
 			return
 		end
 		local isSuper = table.find(ge().PLCdata.admin.superadmins, plr.Name)
-		local isBasic = (ge().PLCdata.admin.everyone and not table.find(ge().PLCdata.admin.blacklisted, plr.Name)) or table.find(ge().PLCdata.admin.admins, plr.Name) or isSuper
+		local isBasic = isSuper or table.find(ge().PLCdata.admin.admins, plr.Name)
 		print(msg)
 		print(plr)
 		print(basic, super)
