@@ -3237,7 +3237,7 @@ PLC = {
 					local char = target.Character
 					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
 					local me = Players.LocalPlayer.Character
-					if char and firetouchinterest then
+					if char and firetouchinterest and spamming then
 						Criminal(target)
 					end
 					if me and os.clock() - last > 0.2 then
