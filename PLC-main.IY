@@ -1125,11 +1125,12 @@ end
 
 -- I'll comment on these if you're curious
 
--- This binds a function to the name (<string>name, <function>, <RBXscriptconnection>bindto?)
+-- This binds a function to the name (<string>name, <function>, <RBXscriptconnection>bindto? <bool>runonbind?)
 
-local function BindRender(name, func, con)
+local function BindRender(name, func, con, run)
 	con = con or RS.RenderStepped
 	table.insert(ge().PLCdata.RenderConnections, {["Name"] = name, ["Connection"] = con:Connect(func)})
+	func()
 end
 
 -- This unbinds the function(s) that have the name (<string>name)
@@ -1145,9 +1146,9 @@ end
 
 -- This unbinds and rebinds the function(s) that habe the name (<string>name)
 
-local function RebindRender(name, func, con)
+local function RebindRender(name, func, con, run)
 	UnbindRender(name)
-	BindRender(name, func, con)
+	BindRender(name, func, con, run)
 end
 
 -- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
@@ -2763,7 +2764,7 @@ PLC = {
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
-						end)
+						end,  Players.LocalPlayer.CharactedAdded, true)
 						notify("Enabled", "Anti-tase was enabled")
 					elseif arg == "off" then
 						UnbindRender("ANTI_TASE")
@@ -3554,7 +3555,7 @@ PLC = {
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
-						end)
+						end, Players.LocalPlayer.CharactedAdded, true)
 						notify("Enabled", "Anti-arrest was enabled")
 					elseif arg == "off" then
 						UnbindRender("ANTI_ARREST")
