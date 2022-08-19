@@ -1130,7 +1130,9 @@ end
 local function BindRender(name, func, con, run)
 	con = con or RS.RenderStepped
 	table.insert(ge().PLCdata.RenderConnections, {["Name"] = name, ["Connection"] = con:Connect(func)})
-	func()
+	if run then
+		func()
+	end
 end
 
 -- This unbinds the function(s) that have the name (<string>name)
