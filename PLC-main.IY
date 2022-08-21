@@ -1305,7 +1305,7 @@ PLC = {
 							Kill(target)
 							attempts = attempts + 1
 							if attempts > 40 then
-								notify("Error", "Couldent kill "..v)
+								notify("Error", "Couldn't kill "..v)
 								break
 							end
 						until not IsAlive(target)
@@ -1433,14 +1433,14 @@ PLC = {
 								succsses = true
 								break
 							else
-								notify("Cant pick up", "Couldent pick up "..item)
+								notify("Cant pick up", "Couldn't pick up "..item)
 								succsses = true
 								break
 							end
 						end
 					end
 					if not succsses then
-						notify("Cant find", "Couldent find "..item)
+						notify("Cant find", "Couldn't find "..item)
 					end
 				end
 			end,
@@ -2173,14 +2173,14 @@ PLC = {
 							succsses = true
 							break
 						else
-							notify("Cant pick up", "Couldent pick up "..item)
+							notify("Cant pick up", "Couldn't pick up "..item)
 							succsses = true
 							break
 						end
 					end
 				end
 				if not succsses then
-					notify("Cant find", "Couldent find "..item)
+					notify("Cant find", "Couldn't find "..item)
 					return
 				end
 				local current = Players.LocalPlayer.Character
@@ -2328,7 +2328,7 @@ PLC = {
 					wait()
 					TeamColor(Players.LocalPlayer, {Color})
 				else
-					notify("Couldent tase", "Took too long to switch to cops team, or its full")
+					notify("Couldn't tase", "Took too long to switch to cops team, or its full")
 				end
 			end,
 		},
@@ -2753,7 +2753,7 @@ PLC = {
 			end,
 		},
 		["pantitase"] = { -- "Those annoying taser spammers are no match for you"
-			["ListName"] = "antitase / notase / tase=bad",
+			["ListName"] = "antitase / notase / tase=bad [on/off]",
 			["Description"] = "Well, you cant get tased. Doesent get any simpler than that",
 			["Aliases"] = {"pnotase"},
 			["Function"] = function(args, speaker)
@@ -2766,7 +2766,7 @@ PLC = {
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
-						end,  Players.LocalPlayer.CharactedAdded, true)
+						end,  Players.LocalPlayer.CharacterAdded, true)
 						notify("Enabled", "Anti-tase was enabled")
 					elseif arg == "off" then
 						UnbindRender("ANTI_TASE")
@@ -2985,7 +2985,7 @@ PLC = {
 						workspace.Remote.ItemHandler:InvokeServer(pickup)
 					end
 				else
-					notify("Couldent give/get key", "Took too long to switch to cops team, or its full")
+					notify("Couldn't give/get key", "Took too long to switch to cops team, or its full")
 				end
 			end,
 		},
@@ -3544,7 +3544,7 @@ PLC = {
 			end,
 		},
 		["antiarrest"] = {
-			["ListName"] = "antiarrest / noarrest",
+			["ListName"] = "antiarrest / noarrest [on/off]",
 			["Description"] = "Prevents the arrest animation when you get arrested",
 			["Aliases"] = {"noarrest"},
 			["Function"] = function(args, speaker)
@@ -3557,7 +3557,7 @@ PLC = {
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
-						end, Players.LocalPlayer.CharactedAdded, true)
+						end, Players.LocalPlayer.CharacterAdded, true)
 						notify("Enabled", "Anti-arrest was enabled")
 					elseif arg == "off" then
 						UnbindRender("ANTI_ARREST")
@@ -3567,6 +3567,57 @@ PLC = {
 					end
 				else
 					notify("Incompatible Exploit", "Your exploit does not support this command (missing getconnections) and anti-tase will not work")
+				end
+			end,
+		},
+		["loot"] = {
+			["ListName"] = "loot [on/off]",
+			["Description"] = "Loopkills you as a guard to spawn in loot",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local arg = tostring(args[1]):lower()
+				if arg == "on" then
+					local waiting = true
+					local waittime = os.clock() + 4
+					Team("g")
+ 					repeat
+						if Players.LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+						waiting = false
+						end
+						if os.clock() > waittime then
+							break
+						end
+						RS.Heartbeat:Wait()
+					until not waiting
+					if not waiting then
+						local NormPos = getRoot(Players.LocalPlayer.Character).CFrame
+						local next = os.clock() + 0.5
+						RebindRender("GUARD_LOOT", function()
+							local root = getRoot(Players.LocalPlayer.Character)
+							if root then
+								root.CFrame = NormPos
+							end
+							if os.clock() > next then
+								next = os.clock() + 0.5
+								local char = Players.LocalPlayer.Character
+								if char then
+									local hum = char:FindFirstChildOfClass("Humanoid")
+									if hum then
+										hum.Health = -math.huge
+									end
+									Respawn()
+								end
+							end
+						end)
+					else
+						notify("Couldn't begin loot", "Took too long to switch to cops team, or its full")
+					end
+					notify("Started", "Guard loot was started")
+				elseif arg == "off" then
+					UnbindRender("GUARD_LOOT")
+					notify("Stopped", "Guard loot was stopped")
+				else
+					notfiy("Invalid", "Invalid argument. Do 'on/off'")
 				end
 			end,
 		},
