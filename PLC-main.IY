@@ -86,7 +86,7 @@ ge().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 	},
 	["pfastcar"] = {
 		["Name"] = "fastcar",
-		["Aliases"] = {"racecar"}
+		["Aliases"] = {"fsc"}
 	},
 	["pdamage"] = {
 		["Name"] = "damage",
@@ -1902,7 +1902,7 @@ PLC = {
 			end,
 		},
 		["pfastcar"] = {
-			["ListName"] = "fastcar [speed] [turnspeed] [strength]",
+			["ListName"] = "fastcar / fsc [speed] [turnspeed] [strength]",
 			["Description"] = "Makes your cars fast",
 			["Aliases"] = {"pracecar"},
 			["Function"] = function(args, speaker)
