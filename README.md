@@ -1,6 +1,7 @@
 # PLC
 
-- Prison Life Commands. For infinite yield.
+- PLC is a plugin that adds commands specfically for **Prison Life** to **Infinite Yield**
+- So it makes the best command line script even better!
 
 # Installation
 
@@ -9,7 +10,6 @@
 # Usage
 
 - Read "How to use" to see give adimin usage
-- Give credit if you remix/copy this repository
 
 # Need help?
 
