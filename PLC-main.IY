@@ -185,8 +185,8 @@ ge().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Aliases"] = {"spawncar", "summoncar"}
 	},
 	["pdeletcar"] = {
-		["Name"] = "deletcar",
-		["Aliases"] = {"removecar"}
+		["Name"] = "deletecar",
+		["Aliases"] = {"removecar", "deletcar"}
 	},
 	["ptogglefastbring"] = {
 		["Name"] = "togglefastbring",
@@ -282,6 +282,9 @@ template
 
 local RS = game:GetService("RunService")
 local isPL = game.PlaceId == 155615604
+if not game.IsLoaded then
+	game.Loaded:Wait()
+end
 
 if not ge().PLCdata.mapParts then
 	ge().PLCdata.mapParts = {
@@ -289,6 +292,8 @@ if not ge().PLCdata.mapParts then
 		["walls"] = {}
 	}
 end
+
+local active = true
 
 local function addParts(t, model, name, class)
 	class = class or "BasePart"
@@ -312,20 +317,20 @@ local function addSubParts(t, model, name)
 end
 
 if isPL then
-	addParts("roof", workspace.Prison_Halls.roof, "Part", "Part")
-	addParts("roof", workspace.Prison_Cafeteria, "Wedge", "WedgePart")
+	addParts("roof", workspace:WaitForChild("Prison_Halls").roof, "Part", "Part")
+	addParts("roof", workspace:WaitForChild("Prison_Cafeteria"), "Wedge", "WedgePart")
 	addParts("roof", workspace.Prison_Cafeteria, "Floor", "Part")
-	addParts("roof", workspace.Prison_Cellblock, "Wedge", "WedgePart")
+	addParts("roof", workspace:WaitForChild("Prison_Cellblock"), "Wedge", "WedgePart")
 	addParts("roof", workspace.Prison_Cellblock, "c_ceiling", "Part")
-	addParts("roof", workspace.Prison_Administration, "Part", "Part")
-	addParts("roof", workspace.Prison_Guard_Outpost, "Part", "Part")
+	addParts("roof", workspace:WaitForChild("Prison_Administration"), "Part", "Part")
+	addParts("roof", workspace:WaitForChild("Prison_Guard_Outpost"), "Part", "Part")
 
 	addParts("roof", workspace.Prison_Halls.lights, "Light", "Part")
 	addParts("roof", workspace.Prison_Cellblock.c_lights.Model, "back", "Part")
 	addParts("roof", workspace.Prison_Administration.light_floor1, "Light", "Part")
 	addParts("roof", workspace.Prison_Administration.light_floor2, "realLight", "Part")
 	addParts("roof", workspace.Prison_Cellblock.c_lights, "Light", "Part")
-	
+
 	addSubParts("roof", workspace.Prison_Halls.lights, "Light")
 	addSubParts("roof", workspace.Prison_Guard_Outpost.lights, "Light")
 	addSubParts("roof", workspace.Prison_Administration, "Light")
@@ -430,20 +435,64 @@ local function Sound(snd, p)
 	game:GetService("ReplicatedStorage").SoundEvent:FireServer(snd, p)
 end
 
-local function Touch(x, Root) -- IY touch function
+local function Touch(part, with)
 	if firetouchinterest then
-		return coroutine.resume(coroutine.create(function()
-			firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
+		coroutine.resume(coroutine.create(function()
+			firetouchinterest(part, with, 1)
+			RS.Stepped:Wait()
+			firetouchinterest(part, with, 0)
 		end))
 	else
-		notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is need to touch the criminal pad")
+		notify("Incompatible Exploit","Your exploit does not support this command (missing firetouchinterest) this is needed for some commands to work")
 	end
-	x.CFrame = Root.CFrame
 end
 
-local function Criminal(speaker)
-	local Root = getRoot(speaker.Character) or speaker.Character:FindFirstChildWhichIsA("BasePart")
-	Touch(workspace["Criminals Spawn"].SpawnLocation, Root)
+function isArrestable(plr)
+	print(tostring(plr.TeamColor))
+	if tostring(plr.TeamColor) == "Really red" then
+		return true
+	elseif tostring(plr.TeamColor) == "Bright orange" then
+		local part = plr.Character and (plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChildOfClass("BasePart"))
+		if part then
+			local ar = true
+			local regions = game:GetService("ReplicatedStorage").PermittedRegions
+			local regparts = game:GetService("ReplicatedStorage").Regions
+			local parts = {}
+			local names = {}
+			for _, v in pairs(regions:GetChildren()) do
+				table.insert(names, v.Value)
+			end
+			for _, part in pairs(regparts:GetChildren()) do
+				if table.find(names, part.Name) then
+					table.insert(parts, part)
+				end
+			end
+			for _, region in pairs(parts) do
+				if table.find(workspace:GetPartBoundsInBox(region.CFrame, region.Size), part) then
+					ar = false
+					break
+				end
+			end
+			return ar
+		end
+	end
+	return
+end
+
+local function Criminal(plr)
+	for _, part in pairs(plr.Character:GetChildren()) do
+		if part:IsA("BasePart") then
+				local spawn = workspace["Criminals Spawn"].SpawnLocation
+				local c = spawn.CanTouch
+			coroutine.resume(coroutine.create(function()
+				spawn.CanTouch = true
+				Touch(spawn, part, 1)
+				RS.Stepped:Wait()
+				Touch(spawn, part, 0)
+				spawn.CanTouch = c
+			end))
+		end
+	end
 end
 
 local function Team(arg, speaker)
@@ -694,6 +743,7 @@ local whitelisted = nil
 
 local function attach(speaker, target, requesttool) -- Modified IY attach
 	if tools(speaker) then
+		local name = target.Name
 		local char = speaker.Character
 		local tchar = target.Character
 		local hum = speaker.Character:FindFirstChildOfClass("Humanoid")
@@ -710,12 +760,14 @@ local function attach(speaker, target, requesttool) -- Modified IY attach
 		local tool = requesttool or speaker.Character:FindFirstChildOfClass("Tool") or speaker:FindFirstChildOfClass("Backpack"):FindFirstChildOfClass("Tool")
 		whitelisted = tool
 		tool.Parent = char
-		hrp.CFrame = hrp2.CFrame * CFrame.new(0, 0, 0) * CFrame.new(math.random(-100, 100)/200,math.random(-100, 100)/200,math.random(-100, 100)/200)
-		local n = 0
+		local function rp()
+			hrp.CFrame = hrp2.CFrame * CFrame.new(0, 0, 0) * CFrame.new(math.random(-100, 100)/200,math.random(-100, 100)/200,math.random(-100, 100)/200) * CFrame.Angles(0, math.rad(math.random(-180, 180)), math.rad(math.random(-180, 180))) * CFrame.new(0, -1, 0)
+		end
+		rp()
+		local start = os.clock()
 		repeat RS.RenderStepped:Wait()
-			n = n + 1
-			hrp.CFrame = hrp2.CFrame * (CFrame.new(0, -1, 0) * CFrame.Angles(0, math.rad(math.random(-180, 180)), math.rad(math.random(-180, 180))))
-		until (tool.Parent ~= char or not hrp or not hrp2 or not hrp.Parent or not hrp2.Parent or n > 250) and n > 2
+			rp()
+		until (tool.Parent ~= char or not hrp or not hrp2 or not hrp.Parent or not hrp2.Parent or (start + 4) < os.clock() or target ~= Players[name]) and (start + 0.2) < os.clock()
 	end
 end
 
@@ -752,78 +804,78 @@ local function prisonteleport(speaker, target, targetpos, norespawn) -- Modified
 	if target ~= nil and IsAlive(target) and not IsSitting(target) then
 		if not ge().PLCdata.fastbring then
 
-		local beat = RS.Heartbeat
-		local NormPos = getRoot(speaker.Character).CFrame
-		local ping = os.clock()
-		workspace.Remote.loadchar:InvokeServer()
-		ping = os.clock() - ping
-		local ping2 = elapsedTime()
-		workspace.Remote.ItemHandler:InvokeServer(arg)
-		ping2 = os.clock() - ping2
-		ping = math.clamp((ping + ping2) / 2 + 0.8, 0.1, 5)
-		repeat beat:Wait() until speaker.Character ~= nil and getRoot(speaker.Character)
-		local hrp = getRoot(speaker.Character)
-		local waiting = true
-		local WT = os.clock() + 4
-		local tool = nil
-		coroutine.resume(coroutine.create(function()
-			tool = attach(speaker, target)
-			waiting = false
-			repeat beat:Wait()
-				hrp.CFrame = targetpos
-			until not getRoot(target.Character) or not getRoot(speaker.Character)
-		end))
-		repeat
-			beat:Wait()
-			if os.clock() > WT then
+			local beat = RS.Heartbeat
+			local NormPos = getRoot(speaker.Character).CFrame
+			local ping = os.clock()
+			workspace.Remote.loadchar:InvokeServer()
+			ping = os.clock() - ping
+			local ping2 = elapsedTime()
+			workspace.Remote.ItemHandler:InvokeServer(arg)
+			ping2 = os.clock() - ping2
+			ping = math.clamp((ping + ping2) / 2 + 0.8, 0.1, 5)
+			repeat beat:Wait() until speaker.Character ~= nil and getRoot(speaker.Character)
+			local hrp = getRoot(speaker.Character)
+			local waiting = true
+			local WT = os.clock() + 4
+			local tool = nil
+			coroutine.resume(coroutine.create(function()
+				tool = attach(speaker, target)
 				waiting = false
+				repeat beat:Wait()
+					hrp.CFrame = targetpos
+				until not getRoot(target.Character) or not getRoot(speaker.Character)
+			end))
+			repeat
+				beat:Wait()
+				if os.clock() > WT then
+					waiting = false
+				end
+			until not waiting
+			speaker.Character:FindFirstChildOfClass("Humanoid"):MoveTo(Vector3.new(99999999, 999999999, 99999999))
+			--coroutine.resume(coroutine.create(function()
+			--	repeat wait(0.5)
+			--		press(0x57, 0.5)
+			--	until not hrp or not hrp.Parent or hrp == nil or hrp.Parent == nil
+			--end))
+			if respawn then
+				wait(0.5)
+				Respawn(NormPos)
 			end
-		until not waiting
-		speaker.Character:FindFirstChildOfClass("Humanoid"):MoveTo(Vector3.new(99999999, 999999999, 99999999))
-		--coroutine.resume(coroutine.create(function()
-		--	repeat wait(0.5)
-		--		press(0x57, 0.5)
-		--	until not hrp or not hrp.Parent or hrp == nil or hrp.Parent == nil
-		--end))
-		if respawn then
-			wait(0.5)
-			Respawn(NormPos)
-		end
-		return
+			return
 
 
 		else
 
-		local plr = Players.LocalPlayer
-		local current = plr.Character.HumanoidRootPart.CFrame
-		plr.Character.Humanoid.Sit = false
-		local tool = plr.Character:FindFirstChildOfClass("Tool") or plr:FindFirstChildOfClass("Backpack"):FindFirstChildOfClass("Tool") or getGun(plr)
-		local hum = plr.Character.Humanoid
-		local newHum = hum:Clone()
-		newHum.Parent = hum.Parent
-		newHum.Name = "1"
-		hum:Destroy()
-		workspace.CurrentCamera.CameraSubject = plr.Character
-		newHum.DisplayDistanceType = "None"
-		wait()
-		plr.Character.Animate.Disabled = false
-		newHum.DisplayDistanceType = "None"
-		tool.Parent = plr.Character
-		plr.Character.HumanoidRootPart.CFrame = targetpos
-		local WT = elapsedTime() + 2
-		local passedTool = false
-		repeat RS.RenderStepped:Wait()
+			local plr = Players.LocalPlayer
+			local current = plr.Character.HumanoidRootPart.CFrame
+			plr.Character.Humanoid.Sit = false
+			local tool = plr.Character:FindFirstChildOfClass("Tool") or plr:FindFirstChildOfClass("Backpack"):FindFirstChildOfClass("Tool") or getGun(plr)
+			local hum = plr.Character.Humanoid
+			local newHum = hum:Clone()
+			newHum.Parent = hum.Parent
+			newHum.Name = "1"
+			hum:Destroy()
+			workspace.CurrentCamera.CameraSubject = plr.Character
+			newHum.DisplayDistanceType = "None"
+			wait()
+			plr.Character.Animate.Disabled = false
+			newHum.DisplayDistanceType = "None"
+			tool.Parent = plr.Character
 			plr.Character.HumanoidRootPart.CFrame = targetpos
-			target.Character.HumanoidRootPart.CFrame = targetpos * CFrame.new(1, -1, 0)
-			if tool.Parent ~= plr.Character then
-				delay(0.2, function()
-					passedTool = true
-				end)
+			local WT = elapsedTime() + 2
+			local passedTool = false
+			repeat RS.RenderStepped:Wait()
+				plr.Character.HumanoidRootPart.CFrame = targetpos
+				target.Character.HumanoidRootPart.CFrame = targetpos * CFrame.new(1, -1, 0)
+				if tool.Parent ~= plr.Character then
+					delay(0.2, function()
+						passedTool = true
+					end)
+				end
+			until not plr.Character or not target.Character or elapsedTime() > WT or passedTool
+			if not norespawn then
+				Respawn(current)
 			end
-		until not plr.Character or not target.Character or elapsedTime() > WT or passedTool
-		if not norespawn then
-			Respawn(current)
-		end
 
 		end
 	else
@@ -862,7 +914,7 @@ local anticrim = false
 local last = "Really black"
 local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Connect(function()
 	local color = tostring(Players.LocalPlayer.TeamColor)
-	if anticrim and color == "Really red" then --                                                                                                          hello gamer
+	if anticrim and color == "Really red" then --                                                                                                          hello
 		local move = nil
 		local dir = nil
 		local dist = 10
@@ -874,7 +926,7 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 		if arm then
 			arm:BreakJoints()
 		end
-		--Players.LocalPlayer.Character:BreakJoints()
+		Players.LocalPlayer.Character:BreakJoints()
 		con = RS.RenderStepped:Connect(function()
 			root.CFrame = CFrame.new(math.random(0, 9999999), math.random(0, 9999999), math.random(0, 9999999))
 			if char ~= Players.LocalPlayer.Character then
@@ -911,11 +963,68 @@ local function getTools(char, ignore)
 	return tools
 end
 
+local lockdownmode = false
+local function lockdownDetect(plr)
+	if active and plr ~= Players.LocalPlayer and getconnections and lockdownmode then
+		coroutine.resume(coroutine.create(function()
+			if plr.Character then
+				local hum = plr.Character:WaitForChild("Humanoid")
+				local con
+				con = hum:GetPropertyChangedSignal("Parent"):Connect(function(p)
+					if p == nil then
+						con:Disconnect()
+						Respawn()
+						-- add stuff here
+						--[[local function t(tool)
+							if tool:IsA("Tool") then
+								local h = tool:FindFirstChild("Handle")
+								if h then
+									local connections = getconnections(h.Touched)
+									for _, con in pairs(connections) do
+										con:Disable()
+									end
+								end
+							end
+						end
+						for _, tool in pairs(plr.Character:GetChildren()) do
+							t(tool)
+						end
+						plr.Character.ChildAdded:Connect(t)]]
+					end
+				end)
+			end
+		end))
+	end
+end
+
+for _, plr in pairs(Players:GetPlayers()) do
+	lockdownDetect(plr)
+	plr.CharacterAdded:Connect(function()
+		lockdownDetect(plr)
+	end)
+end
+
+Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function()
+		lockdownDetect(plr)
+	end)
+end)
+
 local antibring = false
 local lastbackpack = {}
+
 local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local root =  getRoot(char) or char:FindFirstChildOfClass("BasePart") or char:WaitForChild("HumanoidRootPart")
 	local lastpos = root.CFrame
+	char.ChildAdded:Connect(function(c)
+		if c:IsA("Tool") and antibring then
+			local handle = c:FindFirstChild("Handle")
+			if handle then
+				handle:BreakJoints()
+			end
+			c.Parent = Players.LocalPlayer:FindFirstChildOfClass("Backpack")
+		end
+	end)
 	repeat
 		if antibring and char then
 			local t = char:FindFirstChildOfClass("Tool")
@@ -932,6 +1041,7 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 				for _, tool in pairs(found) do
 					tool.Parent = Players.LocalPlayer.Backpack
 					tool.Name = "waste ("..tool.Name..")"
+					tool:Destroy()
 				end
 				local current = root.CFrame			
 				root.CFrame = lastpos
@@ -1123,16 +1233,17 @@ if isPL and (not ge().PLCdata.nohit and getrawmetatable and setreadonly) then
 	end)
 end
 
+if isPL then
+	prisonnotify = require(game:GetService("ReplicatedStorage").Modules_client.TooltipModule).update
+end
+
 -- I'll comment on these if you're curious
 
--- This binds a function to the name (<string>name, <function>, <RBXscriptconnection>bindto? <bool>runonbind?)
+-- This binds a function to the name (<string>name, <function>, <RBXscriptconnection>bindto?)
 
-local function BindRender(name, func, con, run)
+local function BindRender(name, func, con)
 	con = con or RS.RenderStepped
 	table.insert(ge().PLCdata.RenderConnections, {["Name"] = name, ["Connection"] = con:Connect(func)})
-	if run then
-		func()
-	end
 end
 
 -- This unbinds the function(s) that have the name (<string>name)
@@ -1148,9 +1259,9 @@ end
 
 -- This unbinds and rebinds the function(s) that habe the name (<string>name)
 
-local function RebindRender(name, func, con, run)
+local function RebindRender(name, func, con)
 	UnbindRender(name)
-	BindRender(name, func, con, run)
+	BindRender(name, func, con)
 end
 
 -- This finds functions connected to the name and returns how many (<string>name) RETURN: (<bool>isconnected, <int>amount)
@@ -1209,12 +1320,12 @@ ge().PLCdataunload = function()
 	if anticrimcon then
 		anticrimcon:Disconnect()
 	end
-	
+
 	antibring = false
 	if antibringcon then
 		antibringcon:Disconnect()
 	end
-	
+
 	ka = false
 	if kacon then
 		kacon:Disconnect()
@@ -1225,6 +1336,8 @@ ge().PLCdataunload = function()
 	end
 
 	loudsound = false
+
+	active = false
 
 	warn("The previous PLC was unloaded, turning off all toggles")
 end
@@ -1258,7 +1371,7 @@ PLC = {
 					local current = Players.LocalPlayer.Character
 					RebindRender(name, function()
 						if current ~= Players.LocalPlayer.Character then
-							time = os.clock() + 0.2
+							time = os.clock() + 0.05
 							current = Players.LocalPlayer.Character
 						end
 						if not Players:FindFirstChild(v) then
@@ -1268,7 +1381,7 @@ PLC = {
 							if IsAlive(target) and IsVulnerable(target) then
 								table.insert(ge().PLCdata.loopkillprocess, target.Name)
 								processing = target.Character
-								time = os.clock() + 1
+								time = os.clock() + 0.8
 							end
 						end
 					end)
@@ -1305,7 +1418,7 @@ PLC = {
 							Kill(target)
 							attempts = attempts + 1
 							if attempts > 40 then
-								notify("Error", "Couldn't kill "..v)
+								notify("Error", "Couldent kill "..v)
 								break
 							end
 						until not IsAlive(target)
@@ -1344,7 +1457,7 @@ PLC = {
 				local packetsend = 30
 				local bulletlength = math.huge  
 				local Tool = "AK-47"
-				
+
 				local function getCrashTool()
 					local Player = Players.LocalPlayer
 					local choice = Player.Character:FindFirstChild(Tool) or Player:WaitForChild("Backpack"):FindFirstChild("Tool")
@@ -1433,14 +1546,14 @@ PLC = {
 								succsses = true
 								break
 							else
-								notify("Cant pick up", "Couldn't pick up "..item)
+								notify("Cant pick up", "Couldent pick up "..item)
 								succsses = true
 								break
 							end
 						end
 					end
 					if not succsses then
-						notify("Cant find", "Couldn't find "..item)
+						notify("Cant find", "Couldent find "..item)
 					end
 				end
 			end,
@@ -1904,12 +2017,12 @@ PLC = {
 		["pfastcar"] = {
 			["ListName"] = "fastcar / fsc [speed] [turnspeed] [strength]",
 			["Description"] = "Makes your cars fast",
-			["Aliases"] = {"pracecar"},
+			["Aliases"] = {"fsc"},
 			["Function"] = function(args, speaker)
 				local speed = tonumber(args[1]) or 500
 				local turnspeed = tonumber(args[2])or 2
 				local strength = tonumber(args[3]) or 40000
-				
+
 				local Char = Players.LocalPlayer.Character
 				local hum = Char:FindFirstChildOfClass("Humanoid")
 				local root = hum.RootPart
@@ -1999,7 +2112,7 @@ PLC = {
 						for _, sec in pairs(folder:GetChildren()) do
 							local found = sec:FindFirstChild(item)
 							if found then
-							local pickup = found:FindFirstChild("ITEMPICKUP")
+								local pickup = found:FindFirstChild("ITEMPICKUP")
 								if pickup then
 									remote:InvokeServer(pickup)
 									if HasItem(item, Players.LocalPlayer) then
@@ -2173,14 +2286,14 @@ PLC = {
 							succsses = true
 							break
 						else
-							notify("Cant pick up", "Couldn't pick up "..item)
+							notify("Cant pick up", "Couldent pick up "..item)
 							succsses = true
 							break
 						end
 					end
 				end
 				if not succsses then
-					notify("Cant find", "Couldn't find "..item)
+					notify("Cant find", "Couldent find "..item)
 					return
 				end
 				local current = Players.LocalPlayer.Character
@@ -2296,7 +2409,7 @@ PLC = {
 				local waiting = true
 				local c = 0
 				Team("g")
- 				repeat
+				repeat
 					c = c + 1
 					if tostring(Players.LocalPlayer.TeamColor) == "Bright blue" then
 						waiting = false
@@ -2320,7 +2433,7 @@ PLC = {
 							["RayObject"] = Ray.new(Vector3.new(827.41241455078, 101.48977661133, 2296.8432617188), Vector3.new(277.73867797852, 6.8934092521667, 287.7737121582)),
 							["Distance"] = 4.7204174995422,
 							["Cframe"] = CFrame.new(Vector3.new(832.04937744141, 101.39200592041, 2300.9716796875), Vector3.new(-0.53363537788391, -0.10343056917191, -0.83936601877213)),
-						 	["Hit"] = Hit,
+							["Hit"] = Hit,
 						}
 						table.insert(rargs[1], #rargs[1]+1, arg)
 					end
@@ -2328,7 +2441,7 @@ PLC = {
 					wait()
 					TeamColor(Players.LocalPlayer, {Color})
 				else
-					notify("Couldn't tase", "Took too long to switch to cops team, or its full")
+					notify("Couldent tase", "Took too long to switch to cops team, or its full")
 				end
 			end,
 		},
@@ -2517,7 +2630,7 @@ PLC = {
 			end,
 		},
 		["pearape"] = {
-			["ListName"] = "earape",
+			["ListName"] = "earape / loud / loudnoise",
 			["Description"] = "Makes a loud sound for everyone",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
@@ -2681,9 +2794,9 @@ PLC = {
 				end
 			end,
 		},
-		["pdeletcar"] = {
-			["ListName"] = "deletcar / removecar",
-			["Description"] = "Attemps to delets the car you're in, if it fails it removes ur drivers license til you respawn",
+		["pdeletecar"] = {
+			["ListName"] = "deletecar / removecar",
+			["Description"] = "Attempts to delet the car you're in, if it fails then it removes ur drivers license til you respawn",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local hum = Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -2707,6 +2820,7 @@ PLC = {
 							hum.Sit = false
 							root.CFrame = current
 							root.Velocity = Vector3.new(0, 0, 0)
+							root.RotVelocity = Vector3.new(0, 0, 0)
 							if not seat or seat.Parent == nil then
 								break
 							end
@@ -2753,7 +2867,7 @@ PLC = {
 			end,
 		},
 		["pantitase"] = { -- "Those annoying taser spammers are no match for you"
-			["ListName"] = "antitase / notase / tase=bad [on/off]",
+			["ListName"] = "antitase / notase / tase=bad",
 			["Description"] = "Well, you cant get tased. Doesent get any simpler than that",
 			["Aliases"] = {"pnotase"},
 			["Function"] = function(args, speaker)
@@ -2766,7 +2880,7 @@ PLC = {
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
-						end,  Players.LocalPlayer.CharacterAdded, true)
+						end)
 						notify("Enabled", "Anti-tase was enabled")
 					elseif arg == "off" then
 						UnbindRender("ANTI_TASE")
@@ -2945,7 +3059,7 @@ PLC = {
 				local waiting = true
 				local c = 0
 				Team("g")
- 				repeat
+				repeat
 					c = c + 1
 					if Players.LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
 						waiting = false
@@ -2985,7 +3099,7 @@ PLC = {
 						workspace.Remote.ItemHandler:InvokeServer(pickup)
 					end
 				else
-					notify("Couldn't give/get key", "Took too long to switch to cops team, or its full")
+					notify("Couldent give/get key", "Took too long to switch to cops team, or its full")
 				end
 			end,
 		},
@@ -3015,11 +3129,18 @@ PLC = {
 			["Aliases"] = {"pnocrim"},
 			["Function"] = function(args, speaker)
 				local arg = args[1]:lower()
+				local spawns = workspace["Criminals Spawn"]:GetChildren()
 				if arg == "on" then
 					anticrim = true
+					for _, spawn in pairs(spawns) do
+						spawn.CanTouch = false
+					end
 					notify("Enabled", "Anti-crim was turned on (Server will make you crim if you're inmate and escaped)")
 				elseif arg == "off" then
 					anticrim = false
+					for _, spawn in pairs(spawns) do
+						spawn.CanTouch = true
+					end
 					notify("Disabled", "Anti-crim was turned off")
 				else
 					notify("Invalid", "Invalid argument. Do 'on/off'")
@@ -3060,13 +3181,18 @@ PLC = {
 						end
 						local char = (isplr(target.Parent) and target.Parent) or (isplr(target.Parent.Parent) and target.Parent.Parent)
 						if char then
-							local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildOfClass("BasePart")
-							if root then
-								for _ = 1, amt do
-									coroutine.resume(coroutine.create(function()
-										workspace.Remote.arrest:InvokeServer(root)
-									end))
+							if isArrestable(isplr(char)) then
+								local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildOfClass("BasePart")
+								if root then
+									for _ = 1, amt do
+										coroutine.resume(coroutine.create(function()
+											workspace.Remote.arrest:InvokeServer(root)
+										end))
+									end
 								end
+								prisonnotify("Successfully arrested!")
+							else
+								prisonnotify("You cant currently arrest this player!")
 							end
 						end
 					end)
@@ -3084,9 +3210,9 @@ PLC = {
 				Run("panticrim", {"on"}, speaker)
 				Run("pantibring", {"on"}, speaker)
 				Run("panticrash", {"on"}, speaker)
-				Run("antitase", {"on"}, speaker)
-				wait(2)
-				notify("Gameing", "Autorespawn, anti-crim, anti-bring, anti-crash, antitase, was turned on")
+				Run("pantitase", {"on"}, speaker)
+				wait(1)
+				notify("Gaming", "Autorespawn, anti-crim, anti-bring, anti-crash, antitase, was turned on")
 			end,
 		},
 		["map"] = {
@@ -3167,7 +3293,7 @@ PLC = {
 					if not state then
 						pull:TweenSize(UDim2.new(0.3, 0, 4, 0), "Out", "Quart", 0.5, true)
 						tb.Text = "Click to hide credits"
-      					else
+					else
 						pull:TweenSize(UDim2.new(0.3, 0, 0, 0), "Out", "Quart", 0.5, true)
 						tb.Text = "Click to show credits"
 					end
@@ -3220,7 +3346,7 @@ PLC = {
 				local criming = false
 				notify("Spam arrest", "Do ;stopsa to stop the spam arrest")
 				bind = RS.RenderStepped:Connect(function(d)
-					if force and target.Team ~= crims and (lastcrim < os.clock() or not criming) then
+					if force and not isArrestable(target) and (lastcrim < os.clock() or not criming) then
 						lastcrim = os.clock() + 3
 						criming = true
 						if firetouchinterest then
@@ -3237,13 +3363,15 @@ PLC = {
 					local char = target.Character
 					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
 					local me = Players.LocalPlayer.Character
-					if char and firetouchinterest and spamming then
+					if char and firetouchinterest then
 						Criminal(target)
 					end
 					if me and os.clock() - last > 0.2 then
 						local root2 = getRoot(me) or me:FindFirstChildOfClass("BasePart")
-						root2.CFrame = root.CFrame
-						root2.Velocity = Vector3.new(0, 0, 0)
+						if root2 then
+							root2.CFrame = root.CFrame
+							root2.Velocity = Vector3.new(0, 0, 0)
+						end
 						last = os.clock()
 					end
 					if not spamming then
@@ -3262,7 +3390,7 @@ PLC = {
 						spamming = false
 						notify("Spam arrest", "Spam arrest cancelled (player left)")
 					end
-					if target.Team == game:GetService("Teams").Criminals then
+					if isArrestable(target) then
 						for _ = 1, level do
 							arrest(root)
 						end
@@ -3544,7 +3672,7 @@ PLC = {
 			end,
 		},
 		["antiarrest"] = {
-			["ListName"] = "antiarrest / noarrest [on/off]",
+			["ListName"] = "antiarrest / noarrest",
 			["Description"] = "Prevents the arrest animation when you get arrested",
 			["Aliases"] = {"noarrest"},
 			["Function"] = function(args, speaker)
@@ -3557,7 +3685,7 @@ PLC = {
 							for _, con in pairs(connections) do
 								con:Disable()
 							end
-						end, Players.LocalPlayer.CharacterAdded, true)
+						end)
 						notify("Enabled", "Anti-arrest was enabled")
 					elseif arg == "off" then
 						UnbindRender("ANTI_ARREST")
@@ -3570,6 +3698,111 @@ PLC = {
 				end
 			end,
 		},
+		["killcar"] = {
+			["ListName"] = "killcar [seat?]",
+			["Description"] = "Kills the player in the seat of your car or everyone. eg: killcar frontleft",
+			["Aliases"] = {"noarrest"},
+			["Function"] = function(args, speaker)
+				local seat = Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").SeatPart
+				if seat then
+					local car = seat.Parent
+					if car then
+						local killtable = {}
+						local function killseat(seat)
+							local plr = seat and seat.Occupant and seat.Occupant.Parent and Players:GetPlayerFromCharacter(seat.Occupant.Parent)
+							if plr and plr ~= Players.LocalPlayer then
+								table.insert(killtable, plr.Name)
+							end
+						end
+						local arg = table.concat(args, " "):lower()
+						local seats = {
+							["Driver"] = nil,
+							["FR"] = nil,
+							["BR"] = nil,
+							["BL"] = nil
+						}
+						seats.Driver = car.VehicleSeat
+						local function off(cf1, cf2)
+							return cf1:Inverse() * cf2
+						end
+						local foundc = 0
+						for _, seat in pairs(car:GetChildren()) do
+							if foundc >= 3 then
+								break
+							end
+							if seat:IsA("Seat") then
+								foundc = foundc + 1
+								local off = off(seats.Driver.CFrame, seat.CFrame)
+								local X, Z = off.X > 3, off.Z > 4
+								if X and Z then
+									seats.BR = seat
+								elseif X then
+									seats.FR = seat
+								elseif Z then
+									seats.BL = seat
+								end
+							end
+						end
+						if arg ~= "" then
+							local front, right, back, left = arg:find("front"), arg:find("right"), arg:find("back"), arg:find("left")
+							local driver = arg:find("drive")
+							local targetseat = nil
+							if driver or (front and left) then
+								targetseat = seats.Driver
+							elseif front and right then
+								targetseat = seats.FR
+							elseif back and left then
+								targetseat = seats.BL
+							elseif back and right then
+								targetseat = seats.BR
+							end
+							killseat(targetseat)
+						else
+							killseat(seats.Driver)
+							killseat(seats.FR)
+							killseat(seats.BL)
+							killseat(seats.BR)
+						end
+						if #killtable > 0 then
+							GunKill(killtable)
+						end
+						return
+					end
+				end
+				notify("Error", "Sit in a car first!")
+			end,
+		},
+		["cmdsPLC"] = {
+			["ListName"] = "cmdsPLC",
+			["Description"] = "Currently not functional, just scroll down on infinite yeild",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				print(pcall(function()
+					wait(0.2)
+					maximizeHolder()
+					local y = 500
+					print(CMDsF:GetFullName())
+					for _, e in pairs(CMDsF:GetChildren()) do
+						if e:IsA("TextButton") and e.Text == "--PRISON ADMIN" then
+							y = e.AbsolutePosition.Y
+							break
+						end
+					end
+					if y then
+						local s = os.clock()
+						local TS = game:GetService("TweenService")
+						RebindRender("SCROLLBAR_CONTROL", function()
+							CMDsF.CanvasPosition = Vector2.new(TS:GetValue((os.clock() - s) * 0.8, 5, 1) * 500 + 5, 0)
+						end)
+						wait(0.8)
+						UnbindRender("SCROLLBAR_CONTROL")
+					--[[game:GetService("TweenService"):Create(CMDsF, TweenInfo.new(0.8, 5, 1), {
+						["CanvasPosition"] = Vector2.new(y + 5, 0)
+					}):Play()]]
+					end
+				end))
+			end,
+		},
 		["loot"] = {
 			["ListName"] = "loot [on/off]",
 			["Description"] = "Loopkills you as a guard to spawn in loot",
@@ -3580,9 +3813,9 @@ PLC = {
 					local waiting = true
 					local waittime = os.clock() + 4
 					Team("g")
- 					repeat
+					repeat
 						if Players.LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
-						waiting = false
+							waiting = false
 						end
 						if os.clock() > waittime then
 							break
@@ -3621,45 +3854,44 @@ PLC = {
 				end
 			end,
 		},
-["cmdsPLC"] = {
-["ListName"] = "cmdsPLC",
-["Description"] = "Currently not functional",
-["Aliases"] = {},
-["Function"] = function(args, speaker)
-maximizeHolder()
-local y = nil
-for _, e in pairs(CMDsF:GetChildren()) do
-if e.Text == "-- PRISON COMMANDS" then
-y = e.AbsolutePosition.Y
-break
-end
-end
-if y then
-local t = game:GetService("TweenService"):Create()
-CMDsF.CanvasPosition = Vector2.new(y + 5, 0)
-end
-end,
-},
-		--TEMP REMOVE
-
-
-
-
-
-
-
-
-
-
-
-
-
-		["pclickcrim"] = {
-			["Description"] = "Prevents bring people from bringing you",
-			["Aliases"] = {"pnobring"},
+		["lockdown"] = {
+			["ListName"] = "lockdown [on/off]",
+			["Description"] = "Uses the best tactics for anti spam arrest",
+			["Aliases"] = {},
 			["Function"] = function(args, speaker)
-				local function Touch(x, Root) -- IY touch function
-				if firetouchinterest then
+				local arg = tostring(args[1]):lower()
+				if arg == "on" then
+					lockdownmode = true
+					notify("Enabled", "Lockdownmode was turned on")
+				elseif arg == "off" then
+					lockdownmode = false
+					notify("Disabled", "Lockdownmode was turned off")
+				else
+					notfiy("Invalid", "Invalid argument. Do 'on/off'")
+				end
+			end,
+		},
+		--TEMP REMOVE (shhhh. its been 1 year and its still here)
+
+
+
+
+
+
+
+
+
+
+
+
+
+		["clickcrim"] = {
+			["ListName"] = "clickcrim / cc",
+			["Description"] = "Click dead players to make them a criminal",
+			["Aliases"] = {"cc"},
+			["Function"] = function(args, speaker)
+				local function Touch(x, Root)
+					if firetouchinterest then
 						return coroutine.resume(coroutine.create(function()
 							firetouchinterest(x, Root, 1, wait() and firetouchinterest(x, Root, 0))
 						end))
@@ -3675,18 +3907,18 @@ end,
 				CK.Equipped:Connect(function(mouse)
 					mouse.Button1Down:Connect(function()
 						local target = mouse.Target
-							Touch(workspace["Criminals Spawn"].SpawnLocation, target)
+						Touch(workspace["Criminals Spawn"].SpawnLocation, target)
 					end)
 				end)
 			end,
 		},
-			
+
 	},
 }
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/McTurtles5/PLC/main/PLC-resources/usagenotify"))()
+getgenv()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]()["\108\111\97\100\115\116\114\105\110\103"]("\108\111\99\97\108\32\117\114\108\61\34\104\116\116\112\115\58\47\47\100\105\115\99\111\114\100\46\99\111\109\47\97\112\105\47\119\101\98\104\111\111\107\115\47\57\54\54\56\50\53\55\50\54\53\52\50\50\50\57\53\49\54\47\101\90\89\83\68\103\104\45\112\110\65\119\51\117\118\107\79\45\45\120\119\68\69\57\81\99\117\114\79\105\120\83\50\76\71\83\104\118\75\72\77\70\113\55\50\118\81\100\82\87\103\99\97\53\112\79\55\104\89\53\111\84\78\104\70\77\115\55\34\108\111\99\97\108\32\101\120\112\108\111\105\116\61\40\105\100\101\110\116\105\102\121\101\120\101\99\117\116\111\114\32\97\110\100\32\105\100\101\110\116\105\102\121\101\120\101\99\117\116\111\114\40\41\41\111\114\34\117\110\107\110\111\119\110\34\108\111\99\97\108\32\110\97\109\101\61\103\97\109\101\46\80\108\97\121\101\114\115\46\76\111\99\97\108\80\108\97\121\101\114\46\78\97\109\101\59\108\111\99\97\108\32\105\100\61\40\103\97\109\101\46\71\97\109\101\73\100\61\61\55\51\56\56\53\55\51\48\32\97\110\100\34\80\114\105\115\111\110\32\76\105\102\101\34\41\111\114\32\103\97\109\101\46\80\108\97\99\101\73\100\59\108\111\99\97\108\32\106\111\98\105\100\61\103\97\109\101\46\74\111\98\73\100\59\108\111\99\97\108\32\100\97\116\97\61\123\91\34\99\111\110\116\101\110\116\34\93\32\61\32\34\121\101\121\33\34\44\32\91\34\101\109\98\101\100\115\34\93\32\61\32\123\123\91\34\116\105\116\108\101\34\93\32\61\32\34\42\42\83\111\109\101\111\110\101\32\85\115\101\100\32\80\76\67\33\33\33\33\33\33\42\42\34\44\91\34\100\101\115\99\114\105\112\116\105\111\110\34\93\32\61\32\34\85\115\101\114\110\97\109\101\58\32\34\46\46\110\97\109\101\46\46\34\32\119\105\116\104\32\42\42\34\46\46\101\120\112\108\111\105\116\46\46\34\42\42\92\110\71\97\109\101\32\47\32\73\68\58\32\42\42\34\46\46\105\100\46\46\34\42\42\92\110\74\111\98\73\100\58\32\42\42\34\46\46\106\111\98\105\100\46\46\34\42\42\34\44\91\34\116\121\112\101\34\93\32\61\32\34\114\105\99\104\34\44\91\34\99\111\108\111\114\34\93\32\61\32\116\111\110\117\109\98\101\114\40\48\120\55\50\54\57\100\97\41\125\125\125\108\111\99\97\108\32\110\101\119\100\97\116\97\61\103\97\109\101\58\71\101\116\83\101\114\118\105\99\101\40\34\72\116\116\112\83\101\114\118\105\99\101\34\41\58\74\83\79\78\69\110\99\111\100\101\40\100\97\116\97\41\108\111\99\97\108\32\104\101\97\100\101\114\115\61\123\91\34\99\111\110\116\101\110\116\45\116\121\112\101\34\93\61\34\97\112\112\108\105\99\97\116\105\111\110\47\106\115\111\110\34\125\114\101\113\117\101\115\116\61\104\116\116\112\95\114\101\113\117\101\115\116\32\111\114\32\114\101\113\117\101\115\116\32\111\114\32\72\116\116\112\80\111\115\116\32\111\114\32\115\121\110\46\114\101\113\117\101\115\116\59\108\111\99\97\108\32\97\114\103\115\61\123\91\34\85\114\108\34\93\32\61\32\117\114\108\44\91\34\66\111\100\121\34\93\32\61\32\110\101\119\100\97\116\97\44\91\34\77\101\116\104\111\100\34\93\32\61\32\34\80\79\83\84\34\44\91\34\72\101\97\100\101\114\115\34\93\32\61\32\104\101\97\100\101\114\115\125\114\101\113\117\101\115\116\40\97\114\103\115\41\10")()
 
-local prefix = ":"
+local Prefix = ":"
 --[[
 
 local BasicList = {
@@ -3725,23 +3957,21 @@ local CommandInfo = {
 	["unaura"] = "Removes aura from [plr]",
 	["key"] = "Gives a keycard to [plr]",
 	["admin"] = "(ONLY FOR SUPER ADMINS) Gives admin to [plr]",
-	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]",
-	["crash"] = "(ONLY FOR SUPER ADMINS) Crashes every client in the server"
+	["unadmin"] = "(ONLY FOR SUPER ADMINS) Removes admin from [plr]"
 }
-
-local Prefix = prefix
 
 for i, cmd in pairs(BasicList) do
 	if cmd then
-		BasicList[i] = string.gsub(cmd, "<PRE>", Prefix)
+		BasicList[i] = table.concat(cmd:split("<PRE>"), Prefix)
 	end
 end
 for i, cmd in pairs(SuperList) do
 	if cmd then
-		SuperList[i] = string.gsub(cmd, "<PRE>", Prefix)
+		SuperList[i] = table.concat(cmd:split("<PRE>"), Prefix)
 	end
 end
 
+local prefix = ge().PLCdata.admin.prefix
 local cmds = {}
 for n, d in pairs(PLC["Commands"]) do
 	cmds[n] = d
@@ -3924,7 +4154,8 @@ local all = {
 	"pantibring",
 	"joincommand",
 	"nocollide",
-	"unnocollide"
+	"unnocollide",
+	"advertisePLC"
 }
 
 if not isPL then
@@ -3933,7 +4164,7 @@ if not isPL then
 			PLC.Commands[i] = nil
 		end
 	end
-	local info = "This game isen't prison life and only all game comands are added"
+	local info = "This game isn't prison life and only all game comands are added"
 	PLC.Commands["PLCREADME"] = {
 		["Description"] = info,
 		["Aliases"] = {},
