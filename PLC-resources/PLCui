@@ -379,9 +379,9 @@ PLClogo.Name = "PLClogo"
 PLClogo.Parent = Loader
 PLClogo.AnchorPoint = Vector2.new(0.5, 0)
 PLClogo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-PLClogo.BackgroundTransparency = 0.000
+PLClogo.BackgroundTransparency = 1.000
 PLClogo.Position = UDim2.new(0.5, 0, 0, 0)
-PLClogo.Size = UDim2.new(0.550000024, 0, 0.649999976, 0)
+PLClogo.Size = UDim2.new(0.60000024, 0, 0.649999976, 0)
 PLClogo.Image = "http://www.roblox.com/asset/?id=11028357656"
 
 bar.Name = "bar"
