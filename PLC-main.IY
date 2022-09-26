@@ -4253,6 +4253,16 @@ if isPL then
 		local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
 		root.CFrame = CFrame.new(921, 100, 2374)
 	end)
+	
+	for _, v in pairs(workspace:GetChildren()) do
+		if v:IsA("Part") and v.Name == "Part" and v:FindFirstChild("SurfaceGui") then
+			local c = Instance.new("ClickDetector", v)
+			c.MaxActivationDistance = 10
+			c.MouseClick:Connect(function()
+				Players.LocalPlayer.PlayerGui.Home.hud.diaryOfNamapo.Visible = true
+			end)
+		end
+	end
 end
 
 return PLC
