@@ -184,7 +184,7 @@ ge().PLCdata.cmdreplace = { -- What commands to replace with name and aliases
 		["Name"] = "car",
 		["Aliases"] = {"spawncar", "summoncar"}
 	},
-	["pdeletcar"] = {
+	["pdeletecar"] = {
 		["Name"] = "deletecar",
 		["Aliases"] = {"removecar", "deletcar"}
 	},
@@ -1017,7 +1017,7 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local root =  getRoot(char) or char:FindFirstChildOfClass("BasePart") or char:WaitForChild("HumanoidRootPart")
 	local lastpos = root.CFrame
 	char.ChildAdded:Connect(function(c)
-		if c:IsA("Tool") and antibring then
+		if c:IsA("Tool") and antibring and c ~= whitelisted then
 			local handle = c:FindFirstChild("Handle")
 			if handle then
 				handle:BreakJoints()
@@ -3654,7 +3654,7 @@ PLC = {
 					local Teams = game:GetService("Teams")
 					RebindRender("ARREST_aura", function()
 						for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
-							if (plr.Team == Teams.Inmates or plr.Team == Teams.Criminals) and IsAlive(plr) and IsClose(plr, speaker) and plr ~= speaker then
+							if isArrestable(plr) and IsAlive(plr) and IsClose(plr, speaker) and plr ~= speaker then
 								local root = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
 								coroutine.resume(coroutine.create(function()
 									workspace.Remote.arrest:InvokeServer(root)
