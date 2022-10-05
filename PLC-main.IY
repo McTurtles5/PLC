@@ -1235,6 +1235,8 @@ end
 
 if isPL then
 	prisonnotify = require(game:GetService("ReplicatedStorage").Modules_client.TooltipModule).update
+
+	meleeRemote = game:GetService("ReplicatedStorage").meleeEvent
 end
 
 -- I'll comment on these if you're curious
@@ -1618,8 +1620,6 @@ PLC = {
 			["Aliases"] = {"psuperpunch", "pfp"},
 			["Function"] = function(args, speaker)
 				local mul = tonumber(args[1]) or 1
-				local mainRemotes = game.ReplicatedStorage
-				local meleeRemote = mainRemotes['meleeEvent']
 				local mouse = game.Players.LocalPlayer:GetMouse()
 				local enabled = true
 				local rightpunch = true
@@ -1684,8 +1684,6 @@ PLC = {
 			["Function"] = function(args, speaker)
 				local mul = tonumber(args[1]) or 1
 				local enabled = true
-				local mainRemotes = game.ReplicatedStorage
-				local meleeRemote = mainRemotes['meleeEvent']
 				local mouse = game.Players.LocalPlayer:GetMouse()
 				local rightpunch = true
 				local right = Players.LocalPlayer.Character.ClientInputHandler.fight_right
@@ -2069,7 +2067,7 @@ PLC = {
 		},
 		["p18+"] = {
 			["ListName"] = "18+ / [REDACTED] / [REDACTED]",
-			["Description"] = "wh- why just why (MUST NOT BE A GUARD) (its 18+)",
+			["Description"] = "wh- why just why (MUST NOT BE A GUARD)",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local Tool = Players.LocalPlayer.Backpack:FindFirstChild("Hammer") or Players.LocalPlayer.Character:FindFirstChild("Hammer")
@@ -2077,6 +2075,16 @@ PLC = {
 					local arg = workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP
 					workspace.Remote.ItemHandler:InvokeServer(arg)
 					Tool = Players.LocalPlayer.Backpack:FindFirstChild("Hammer")
+					local part = Tool.Part
+					part.Touched:connect(function(hit)
+						if not hit:IsDescendantOf(Players.LocalPlayer.Character) then
+							local plr = Players:GetPlayerFromCharacter(hit.Parent)
+							if plr then
+								meleeRemote:FireServer(plr)
+								Sound(Players.LocalPlayer.Character.Head.punchSound)
+							end
+						end
+					end)
 				end
 				Tool.Grip = CFrame.new(1.5, 0.9, 1.6) * CFrame.Angles(math.rad(-90), 0, math.rad(-90))
 				Tool.ToolTip = "sus hammer 😳"
