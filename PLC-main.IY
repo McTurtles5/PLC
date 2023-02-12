@@ -4181,6 +4181,7 @@ if not isPL then
 		end
 	}
 else
+	notify("ANTICHEAT", "Prison life has been updated with an anticheat and many PLC commadns may not work")
 	addcases["hostile"] = function(speaker,args)
 		local returns = {}
 		for _, plr in pairs(Players:GetPlayers()) do
