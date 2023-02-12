@@ -1,7 +1,8 @@
 # <img src="https://user-images.githubusercontent.com/66704899/192125445-d3e7e15e-2d94-4af4-a6af-eaee31114c53.png" width="100">
 
 # NOTICE!
-- Prison life has been recently updated to have an anticheat, and PLC has not been tested
+- Prison life has been recently updated to have an anticheat, and PLC has not been fixed to account for these changed
+- View [patched commands here](https://github.com/McTurtles5/PLC/wiki)
 
 # 
 
