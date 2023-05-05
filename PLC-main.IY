@@ -448,11 +448,10 @@ local function Touch(part, with)
 end
 
 function isArrestable(plr)
-	print(tostring(plr.TeamColor))
 	if tostring(plr.TeamColor) == "Really red" then
 		return true
 	elseif tostring(plr.TeamColor) == "Bright orange" then
-		local part = plr.Character and (plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChildOfClass("BasePart"))
+		local part = plr.Character and (plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChildWhichIsA("BasePart"))
 		if part then
 			local ar = true
 			local regions = game:GetService("ReplicatedStorage").PermittedRegions
@@ -515,7 +514,7 @@ local function Team(arg, speaker)
 	end
 end
 
-local function TeamColor(speaker, args, spawnpos)
+--[[local function TeamColor(speaker, args, spawnpos)
 	local function team(color)
 		local Char = speaker.Character
 		local pos = Char:WaitForChild("HumanoidRootPart").CFrame
@@ -546,7 +545,7 @@ local function TeamColor(speaker, args, spawnpos)
 			notify("Invalid", "'"..color.."' is not a brick color. (Case sensetive)")
 		end
 	end
-end
+end]]
 
 local function getPlaceHolder()
 	local holder = Instance.new("Tool", Players.LocalPlayer:WaitForChild("Backpack"))
@@ -573,6 +572,47 @@ local function IsArrested(plr)
 	return
 end
 
+--[[
+	"Bright blue",
+	"Bright orange",
+	"Really red",
+	"Medium stone grey",
+]]
+
+local function removeIntro()
+	Players.LocalPlayer.PlayerGui.Home.intro.Visible = false
+end
+
+local function guardsFull()
+	local count = 0
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr.Team == game:GetService("Teams"):WaitForChild("Guards") then
+			count += 1
+		end
+	end
+	return count >= 8
+end
+
+local function rawRespawn()
+	local teamColor = tostring(Players.LocalPlayer.TeamColor) 
+	if teamColor == "Bright blue" then
+		if guardsFull() then
+			workspace.Remote.TeamEvent:FireServer("Bright orange")
+			Players.LocalPlayer.CharacterAdded:Wait()
+		end
+		workspace.Remote.TeamEvent:FireServer("Bright blue")
+		Players.LocalPlayer.CharacterAdded:Wait()
+	elseif teamColor == "Really red" then
+		workspace.Remote.TeamEvent:FireServer("Bright orange")
+		Players.LocalPlayer.CharacterAdded:Wait()
+		task.wait(0.02)
+		Criminal(Players.LocalPlayer)
+	else
+		workspace.Remote.TeamEvent:FireServer("Bright orange")
+		Players.LocalPlayer.CharacterAdded:Wait()
+	end
+end
+
 local function Respawn(spawnpos)
 	local camtrackback = 4
 	local plr = Players.LocalPlayer
@@ -580,7 +620,7 @@ local function Respawn(spawnpos)
 	local pos = nil
 	local vel = nil
 	local camframe = nil
-	local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+	local root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 	local Neutral = plr.Team == game:GetService("Teams"):WaitForChild("Neutral")
 	local trackcam = true
 	local track = nil
@@ -620,7 +660,8 @@ local function Respawn(spawnpos)
 			RS.RenderStepped:Wait()
 		end
 	else
-		workspace.Remote.loadchar:InvokeServer("\110\111\111\111\111\111\32\58\40", Neutral and "Bright orange")
+		rawRespawn()
+		--workspace.Remote.loadchar:InvokeServer("\110\111\111\111\111\111\32\58\40", Neutral and "Bright orange")
 	end
 	trackcam = false
 	while not plr.Character do
@@ -633,7 +674,7 @@ local function Respawn(spawnpos)
 	if not char.PrimaryPart then
 		char:GetPropertyChangedSignal("PrimaryPart"):Wait()
 	end
-	root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+	root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 	local hum = char:FindFirstChildOfClass("Humanoid")
 
 	game:GetService("StarterGui"):SetCoreGuiEnabled("Backpack", true)
@@ -645,7 +686,7 @@ local function Respawn(spawnpos)
 		if pos then
 			local cs = 0
 			repeat
-				local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+				local root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 				root.CFrame = pos
 				if workspace.CurrentCamera and camframe then
 					workspace.CurrentCamera.CFrame = camframe
@@ -695,8 +736,8 @@ end
 local function IsClose(plr, speaker, dist)
 	if plr.Character then
 		dist = dist or 20
-		local hrp = getRoot(speaker.Character) or speaker.Character:FindFirstChildOfClass("BasePart")
-		local hrp2 = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+		local hrp = getRoot(speaker.Character) or speaker.Character:FindFirstChildWhichIsA("BasePart")
+		local hrp2 = getRoot(plr.Character) or plr.Character:FindFirstChildWhichIsA("BasePart")
 		if hrp and hrp2 then
 			if (hrp2.Position - hrp.Position).magnitude <= dist then
 				return true
@@ -715,7 +756,6 @@ local function IsSitting(plr)
 			end
 		end
 	end
-	return
 end
 
 --[[local function IsSwat(speaker)
@@ -771,11 +811,23 @@ local function attach(speaker, target, requesttool) -- Modified IY attach
 	end
 end
 
+local function itemHandler(PICKUP)
+	for _ = 1, 10 do
+		workspace.Remote.ItemHandler:InvokeServer({
+			Position = (Players.LocalPlayer.Character:FindFirstChild("Head") or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")).Position,
+			Parent = PICKUP.Parent
+		})
+		if Players.LocalPlayer.Backpack:FindFirstChild(PICKUP.Parent.Name) or Players.LocalPlayer.Character:FindFirstChild(PICKUP.Parent.Name) then
+			break
+		end
+	end
+end
+
 local function getGun(speaker, name, pickup)
 	name = name or "Remington 870"
 	function get()
 		local arg = pickup or workspace.Prison_ITEMS.giver:FindFirstChild(name).ITEMPICKUP
-		workspace.Remote.ItemHandler:InvokeServer(arg)
+		itemHandler(arg)
 		return speaker.Backpack:FindFirstChild(name)
 	end
 	return speaker.Backpack:FindFirstChild(name) or speaker.Character:FindFirstChild(name) or get()
@@ -787,7 +839,7 @@ end]]
 
 local function fastCriminal(speaker, target)
 	Respawn()
-	local root = speaker.Character and (getRoot(speaker.Character) or speaker.Character:FindFirstChildOfClass("BasePart"))
+	local root = speaker.Character and (getRoot(speaker.Character) or speaker.Character:FindFirstChildWhichIsA("BasePart"))
 	local pos = root and root.CFrame
 	local tool = getGun(speaker, "Hammer", workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP)
 	attach(speaker, target, tool)
@@ -807,10 +859,10 @@ local function prisonteleport(speaker, target, targetpos, norespawn) -- Modified
 			local beat = RS.Heartbeat
 			local NormPos = getRoot(speaker.Character).CFrame
 			local ping = os.clock()
-			workspace.Remote.loadchar:InvokeServer()
+			rawRespawn()
 			ping = os.clock() - ping
 			local ping2 = elapsedTime()
-			workspace.Remote.ItemHandler:InvokeServer(arg)
+			itemHandler(arg)
 			ping2 = os.clock() - ping2
 			ping = math.clamp((ping + ping2) / 2 + 0.8, 0.1, 5)
 			repeat beat:Wait() until speaker.Character ~= nil and getRoot(speaker.Character)
@@ -919,7 +971,7 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 		local dir = nil
 		local dist = 10
 		local char = Players.LocalPlayer.Character
-		local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+		local root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 		local cur = root.CFrame
 		local arm = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightHand")
 		local con = nil
@@ -935,7 +987,7 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 		end)
 		for _, spawn in pairs(workspace["Criminals Spawn"]:GetChildren()) do
 			if spawn:IsA("Part") then
-				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")
 				if (spawn.Position - root.Position).magnitude < dist then
 					move = spawn.Position
 					dir = root.Position
@@ -945,7 +997,7 @@ local anticrimcon = Players.LocalPlayer:GetPropertyChangedSignal("TeamColor"):Co
 		end
 		TeamColor(Players.LocalPlayer, {last}, cur)
 		if move then
-			local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+			local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")
 			root.CFrame = root.CFrame * CFrame.new(CFrame.new(move, dir).LookVector * 50)
 		end
 	else
@@ -1014,7 +1066,7 @@ local antibring = false
 local lastbackpack = {}
 
 local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
-	local root =  getRoot(char) or char:FindFirstChildOfClass("BasePart") or char:WaitForChild("HumanoidRootPart")
+	local root =  getRoot(char) or char:FindFirstChildWhichIsA("BasePart") or char:WaitForChild("HumanoidRootPart")
 	local lastpos = root.CFrame
 	char.ChildAdded:Connect(function(c)
 		if c:IsA("Tool") and antibring and c ~= whitelisted then
@@ -1028,7 +1080,7 @@ local antibringcon = Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	repeat
 		if antibring and char then
 			local t = char:FindFirstChildOfClass("Tool")
-			root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+			root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 			for _, v in pairs(lastbackpack) do
 				if t == v and v:IsA("Tool") then
 					whitelisted = v
@@ -1070,7 +1122,7 @@ local function HasItem(name, plr)
 	return found
 end
 
-local function GunKill(players)
+local function GunKill(players, ak)
 	if type(players) ~= "table" then
 		players = {players}
 	end
@@ -1094,7 +1146,7 @@ local function GunKill(players)
 					["Cframe"] = CFrame.new(Vector3.new(832.04937744141, 101.39200592041, 2300.9716796875), Vector3.new(-0.53363537788391, -0.10343056917191, -0.83936601877213)),
 					["Hit"] = head
 				}
-				for _ = 1, math.floor(health / 23) + 1 do
+				for _ = 1, math.floor(health / 23) + (((not ak) and 1) or 0) do
 					args[1][#args[1]+1] = hitargs
 				end
 			end
@@ -1149,7 +1201,7 @@ local function loud()
 				for _, p in pairs(Players:GetPlayers()) do
 					local c = p.Character
 					if c then
-						local head = c:FindFirstChild("Head") or c:FindFirstChildOfClass("BasePart")
+						local head = c:FindFirstChild("Head") or c:FindFirstChildWhichIsA("BasePart")
 						if head then
 							Sound(s, head)
 						end
@@ -1168,9 +1220,9 @@ end
 
 local function Goto(plr, Char)
 	Char.Humanoid.Sit = false
-	local root2 = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+	local root2 = getRoot(plr.Character) or plr.Character:FindFirstChildWhichIsA("BasePart")
 	local frame = root2.CFrame * CFrame.new(0, 5, -2)
-	local root = getRoot(Char) or Char:FindFirstChildOfClass("BasePart")
+	local root = getRoot(Char) or Char:FindFirstChildWhichIsA("BasePart")
 	Char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
 	Char:SetPrimaryPartCFrame(frame)
 end
@@ -1359,6 +1411,14 @@ PLC = {
 				GunKill(getPlayer(args[1], speaker))
 			end,
 		},
+		["akill"] = {
+			["ListName"] = "akill [plr]",
+			["Description"] = "Almost kills a player with gun",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				GunKill(getPlayer(args[1], speaker), true)
+			end,
+		},
 		["ploopkill"] = {
 			["ListName"] = "loopkill [plr]",
 			["Description"] = "Loop kills a player with gun",
@@ -1464,7 +1524,7 @@ PLC = {
 					local Player = Players.LocalPlayer
 					local choice = Player.Character:FindFirstChild(Tool) or Player:WaitForChild("Backpack"):FindFirstChild("Tool")
 					if not choice then
-						workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.giver[Tool].ITEMPICKUP)
+						itemHandler(workspace.Prison_ITEMS.giver[Tool].ITEMPICKUP)
 						choice = Player:WaitForChild("Backpack"):WaitForChild(Tool)
 					end
 					return choice
@@ -1522,7 +1582,6 @@ PLC = {
 			["Description"] = "Gives you a prison item",
 			["Aliases"] = {"pgun", "pequip", "pg"},
 			["Function"] = function(args, speaker)
-				local remote = workspace.Remote.ItemHandler
 				local folder = workspace.Prison_ITEMS
 				local input = table.concat(args, " ")
 				local items = {}
@@ -1543,7 +1602,7 @@ PLC = {
 							local pickup = found:FindFirstChild("ITEMPICKUP")
 							if pickup then
 								coroutine.resume(coroutine.create(function()
-									remote:InvokeServer(pickup)
+									itemHandler(pickup)
 								end))
 								succsses = true
 								break
@@ -1573,7 +1632,7 @@ PLC = {
 			["Description"] = "Respawns you but its just the remote",
 			["Aliases"] = {"phre"},
 			["Function"] = function(args, speaker)
-				workspace.Remote.loadchar:InvokeServer()
+				rawRespawn()
 			end,
 		},
 		["pauto"] = {
@@ -1756,7 +1815,7 @@ PLC = {
 				Humanoid.HealthChanged:Connect(function(CURHP)
 					if CURHP < HP then
 						coroutine.resume(coroutine.create(function()
-							workspace.Remote.ItemHandler:InvokeServer(arg)
+							itemHandler(arg)
 						end))
 					end
 					HP = Humanoid.Health
@@ -1788,14 +1847,14 @@ PLC = {
 				local Pos = Char:GetPrimaryPartCFrame()
 				local function Goto(plr)
 					Char.Humanoid.Sit = false
-					local root = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+					local root = getRoot(plr.Character) or plr.Character:FindFirstChildWhichIsA("BasePart")
 					local frame = root.CFrame
 					frame = frame * CFrame.new(0, 5, -2)
 					Char.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
 					Char:SetPrimaryPartCFrame(frame)
 				end
 				local function arrest(plr)
-					local i = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+					local i = getRoot(plr.Character) or plr.Character:FindFirstChildWhichIsA("BasePart")
 					if i then
 						coroutine.resume(coroutine.create(function()
 							workspace.Remote.arrest:InvokeServer(i)
@@ -1826,7 +1885,7 @@ PLC = {
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local players = getPlayer(args[1], speaker)
-				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")
 				if not root then return end
 				local bringpos = root.CFrame
 				for _, v in pairs(players) do
@@ -1845,7 +1904,7 @@ PLC = {
 				if argstring and argstring:lower() ~= "void" then
 					local name = getPlayer(args[2], speaker)[1]
 					local target = Players[name]
-					local root = getRoot(target.Character) or target.Character:FindFirstChildOfClass("BasePart")
+					local root = getRoot(target.Character) or target.Character:FindFirstChildWhichIsA("BasePart")
 					if not root then return end
 					bringpos = root.CFrame
 				end
@@ -1860,7 +1919,7 @@ PLC = {
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local players = getPlayer(args[1], speaker)
-				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")
 				if not root then return end
 				local bringpos = root.CFrame
 				for _, v in pairs(players) do
@@ -1869,9 +1928,9 @@ PLC = {
 					if target ~= nil and IsAlive(target) then
 						local NormPos = getRoot(Players.LocalPlayer.Character).CFrame
 						if not ge().PLCdata.fastbring then
-							workspace.Remote.loadchar:InvokeServer()
+							rawRespawn()
 						end
-						workspace.Remote.ItemHandler:InvokeServer(arg)
+						itemHandler(arg)
 						local current = Players.LocalPlayer.Character
 						local tool = current:FindFirstChildOfClass("Tool") or Players.LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
 						tool.Parent = Players.LocalPlayer.Backpack
@@ -1895,7 +1954,7 @@ PLC = {
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
 				local players = getPlayer(args[1], speaker)
-				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+				local root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")
 				if not root then return end
 				local bringpos = root.CFrame
 				for _, v in pairs(players) do
@@ -2060,7 +2119,7 @@ PLC = {
 			["Description"] = "Makes you take 35 damage to trick guards i guess",
 			["Aliases"] = {"pracecar"},
 			["Function"] = function(args, speaker)
-				local Root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildOfClass("BasePart")
+				local Root = getRoot(Players.LocalPlayer.Character) or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")
 				local Part = workspace["Prison_Fences"].fence.damagePart
 				firetouchinterest(Part, Root, 1, wait() and firetouchinterest(Part, Root, 0))
 			end,
@@ -2073,9 +2132,10 @@ PLC = {
 				local Tool = Players.LocalPlayer.Backpack:FindFirstChild("Hammer") or Players.LocalPlayer.Character:FindFirstChild("Hammer")
 				if not Tool then
 					local arg = workspace.Prison_ITEMS.single:FindFirstChild("Hammer").ITEMPICKUP
-					workspace.Remote.ItemHandler:InvokeServer(arg)
+					itemHandler(arg)
 					Tool = Players.LocalPlayer.Backpack:FindFirstChild("Hammer")
 					local part = Tool.Part
+					part.CanTouch = true
 					part.Touched:connect(function(hit)
 						if not hit:IsDescendantOf(Players.LocalPlayer.Character) then
 							local plr = Players:GetPlayerFromCharacter(hit.Parent)
@@ -2095,7 +2155,6 @@ PLC = {
 			["Description"] = "Gives you your custom loadout",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
-				local remote = workspace.Remote.ItemHandler
 				local folder = workspace.Prison_ITEMS
 				local Holders = {}
 				local name = string.lower(table.concat(args, " "))
@@ -2122,7 +2181,7 @@ PLC = {
 							if found then
 								local pickup = found:FindFirstChild("ITEMPICKUP")
 								if pickup then
-									remote:InvokeServer(pickup)
+									itemHandler(pickup)
 									if HasItem(item, Players.LocalPlayer) then
 										sucsses = true
 									end
@@ -2283,14 +2342,13 @@ PLC = {
 					end
 				end
 				local succsses = false
-				local remote = workspace.Remote.ItemHandler
 				local folder = workspace.Prison_ITEMS
 				for _, sec in pairs(folder:GetChildren()) do
 					local found = sec:FindFirstChild(item)
 					if found then
 						local pickup = found:FindFirstChild("ITEMPICKUP")
 						if pickup then
-							remote:InvokeServer(pickup)
+							itemHandler(pickup)
 							succsses = true
 							break
 						else
@@ -2436,7 +2494,7 @@ PLC = {
 					}	
 					for _, plr in pairs(getPlayer(args[1], speaker)) do
 						plr = Players[plr]
-						local Hit = plr.Character:FindFirstChild("Head")--getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+						local Hit = plr.Character:FindFirstChild("Head")--getRoot(plr.Character) or plr.Character:FindFirstChildWhichIsA("BasePart")
 						local arg = {
 							["RayObject"] = Ray.new(Vector3.new(827.41241455078, 101.48977661133, 2296.8432617188), Vector3.new(277.73867797852, 6.8934092521667, 287.7737121582)),
 							["Distance"] = 4.7204174995422,
@@ -2753,7 +2811,10 @@ PLC = {
 					end
 				end
 				coroutine.resume(coroutine.create(function()
-					workspace.Remote.ItemHandler:InvokeServer(button)
+					workspace.Remote.ItemHandler:InvokeServer({
+						Position = (Players.LocalPlayer.Character:FindFirstChild("Head") or Players.LocalPlayer.Character:FindFirstChildWhichIsA("BasePart")).Position,
+						Parent = button
+					})
 				end))
 				local car = nil
 				local con = workspace.CarContainer.ChildAdded:Connect(function(c)
@@ -3093,7 +3154,7 @@ PLC = {
 						if found and target then
 							pickup = found:FindFirstChild("ITEMPICKUP")
 							if pickup and target and target ~= Players.LocalPlayer and IsAlive(target) then
-								workspace.Remote.ItemHandler:InvokeServer(pickup)
+								itemHandler(pickup)
 								local tool = Players.LocalPlayer.Backpack:WaitForChild("Key card")
 								whitelisted = tool
 								tool.Parent = Players.LocalPlayer.Backpack
@@ -3104,7 +3165,7 @@ PLC = {
 					end
 					TeamColor(Players.LocalPlayer, {Color})
 					if not args[1] or args[1]:len() == 0 then
-						workspace.Remote.ItemHandler:InvokeServer(pickup)
+						itemHandler(pickup)
 					end
 				else
 					notify("Couldent give/get key", "Took too long to switch to cops team, or its full")
@@ -3190,7 +3251,7 @@ PLC = {
 						local char = (isplr(target.Parent) and target.Parent) or (isplr(target.Parent.Parent) and target.Parent.Parent)
 						if char then
 							if isArrestable(isplr(char)) then
-								local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildOfClass("BasePart")
+								local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
 								if root then
 									for _ = 1, amt do
 										coroutine.resume(coroutine.create(function()
@@ -3213,7 +3274,6 @@ PLC = {
 			["Aliases"] = {"gameing"},
 			["Function"] = function(args, speaker)
 				speaker = Players.LocalPlayer
-				Run("pteamcolor", {"Really", "black"}, speaker)
 				Run("pauto", {"on"}, speaker)
 				Run("panticrim", {"on"}, speaker)
 				Run("pantibring", {"on"}, speaker)
@@ -3320,6 +3380,7 @@ PLC = {
 				end)
 			end,
 		},
+--[[
 		["spamarrest"] = {
 			["ListName"] = "spamarrest / sa [plr] [forcecrim (y/n)] [APS] (one player)",
 			["Description"] = "Spam arrests a player, antilag is reccomended. APS is Arrests Per Second",
@@ -3327,6 +3388,7 @@ PLC = {
 			["Function"] = function(args, speaker)
 				local aps = tonumber(args[3]) or 2000
 				local target = Players[getPlayer(args[1], speaker)[1]]
+--[[
 				if spamming then
 					notify("Spam arrest", "There are multiple spam arrests now")
 				end
@@ -3369,13 +3431,13 @@ PLC = {
 						level = math.max(1, math.floor(aps * d))
 					end
 					local char = target.Character
-					local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+					local root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 					local me = Players.LocalPlayer.Character
 					if char and firetouchinterest then
 						Criminal(target)
 					end
 					if me and os.clock() - last > 0.2 then
-						local root2 = getRoot(me) or me:FindFirstChildOfClass("BasePart")
+						local root2 = getRoot(me) or me:FindFirstChildWhichIsA("BasePart")
 						if root2 then
 							root2.CFrame = root.CFrame
 							root2.Velocity = Vector3.new(0, 0, 0)
@@ -3385,7 +3447,7 @@ PLC = {
 					if not spamming then
 						bind:Disconnect()
 						if me then
-							local root = getRoot(me) or me:FindFirstChildOfClass("BasePart")
+							local root = getRoot(me) or me:FindFirstChildWhichIsA("BasePart")
 							if root then
 								root.CFrame = start
 							end
@@ -3414,6 +3476,7 @@ PLC = {
 				spamming = false
 			end,
 		},
+]]
 		["nohit"] = {
 			["ListName"] = "nohit / antihit [plr]",
 			["Description"] = "Makes you unable to damage a player with guns regardless of teams",
@@ -3513,7 +3576,7 @@ PLC = {
 				local players = getPlayer(args[1], speaker)
 				local dist = tonumber(args[2]) or 210
 				for _, v in pairs(players) do
-					local root = getRoot(Players[v].Character) or Players[v].Character:FindFirstChildOfClass("BasePart")
+					local root = getRoot(Players[v].Character) or Players[v].Character:FindFirstChildWhichIsA("BasePart")
 					if not root then return end
 					local bringpos = CFrame.new(root.Position + Vector3.new(0, dist, 0))
 					prisonteleport(Players.LocalPlayer, Players[v], bringpos)
@@ -3647,9 +3710,9 @@ PLC = {
 			["Description"] = "Chats how to get PLC in chat",
 			["Aliases"] = {},
 			["Function"] = function(args, speaker)
-				Chat("Get PLC, short for Prison Life Commands. You can find it on github by searching:")
+				Chat("Get PLC! Find it on github by searching:")
 				Chat("McTurtles5/PLC")
-				Chat("-- If you need help then click Wiki on the  github repository")
+				Chat("-- If you need help then click the Wiki button at the top")
 			end,
 		},
 		["arrestaura"] = {
@@ -3663,7 +3726,7 @@ PLC = {
 					RebindRender("ARREST_aura", function()
 						for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
 							if isArrestable(plr) and IsAlive(plr) and IsClose(plr, speaker) and plr ~= speaker then
-								local root = getRoot(plr.Character) or plr.Character:FindFirstChildOfClass("BasePart")
+								local root = getRoot(plr.Character) or plr.Character:FindFirstChildWhichIsA("BasePart")
 								coroutine.resume(coroutine.create(function()
 									workspace.Remote.arrest:InvokeServer(root)
 								end))
@@ -3879,7 +3942,25 @@ PLC = {
 				end
 			end,
 		},
-		--TEMP REMOVE (shhhh. its been 1 year and its still here)
+		["getfriends"] = {
+			["ListName"] = "getfriends [plr]",
+			["Description"] = "Notifies the players friends currently in your server",
+			["Aliases"] = {},
+			["Function"] = function(args, speaker)
+				local target = Players[getPlayer(args[1], speaker)[1]]
+				if target then
+					local friends = {}
+					for _, plr in pairs(Players:GetPlayers()) do
+						if plr ~= target and target:IsFriendsWith(plr.UserId) then
+							table.insert(friends, plr.Name)
+						end
+					end
+					friends = #friends > 0 and table.concat(friends, ", ") or "No friends in this server."
+					notify(target.Name.."'s friends", friends)
+				end
+			end,
+		},
+		--TEMP REMOVE (shhhh. its been 2 years and its still here)
 
 
 
@@ -3989,8 +4070,12 @@ function Run(cmd, args, speaker)
 end
 
 local pris = CFrame.new(914, 100, 2366)
-function Added(plr)
-	plr.Chatted:Connect(function(msg)
+
+game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.OnMessageDoneFiltering.OnClientEvent:Connect(function(Msg)
+	local plr = Players[Msg.FromSpeaker]
+	local msg = Msg.Message or ""
+--function Added(plr)
+	--plr.Chatted:Connect(function(msg)
 	print(pcall(function()
 		if msg:len() > 512 then
 			return
@@ -4035,12 +4120,11 @@ function Added(plr)
 				elseif command == "crim" then
 					Run("pcriminal", args, plr)
 				elseif command == "pris" then
-					
-					local targets = getPlayer(speaker, args)
+					local targets = getPlayer(plr.Name, args)
 					for _, v in pairs(targets) do
 						prisonteleport(Players.LocalPlayer, Players[v], pris)
 					end
-				elseif command == "to" then
+				elseif command == "to" or command == "goto" then
 					local t = {plr.Name, args[1]}
 					Run("pteleport", t, plr)
 				elseif command == "bring" then
@@ -4050,7 +4134,7 @@ function Added(plr)
 					Run("pteleport", args)
 				elseif command == "tase" then
 					Run("ptase", args, plr)
-				elseif command == "k" then
+				elseif command == "k" or command == "kill" then
 					Run("pfastkill", args, plr)
 				elseif command == "arrest" then
 					Run("parrest", args, plr)
@@ -4082,18 +4166,20 @@ function Added(plr)
 			end
 		end
 		end))
-	end)
-end
+	--end)
+--end
+end)
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 if not ge().PLCdataadminloaded and isPL then
 	ge().PLCdataadminloaded = true
-	for _, plr in pairs(Players:GetPlayers()) do
+	--[[for _, plr in pairs(Players:GetPlayers()) do
 		Added(plr)
 	end
-	Players.PlayerAdded:Connect(Added)
+	Players.PlayerAdded:Connect(Added)]]
+	
 end
 
 --[[rconsoleclear()
@@ -4163,7 +4249,8 @@ local all = {
 	"joincommand",
 	"nocollide",
 	"unnocollide",
-	"advertisePLC"
+	"advertisePLC",
+	"getfriends",
 }
 
 if not isPL then
@@ -4181,7 +4268,6 @@ if not isPL then
 		end
 	}
 else
-	notify("ANTICHEAT", "Prison life has been updated with an anticheat and many PLC commadns may not work")
 	addcases["hostile"] = function(speaker,args)
 		local returns = {}
 		for _, plr in pairs(Players:GetPlayers()) do
@@ -4259,7 +4345,7 @@ if isPL then
 	local CD = Instance.new("ClickDetector", button)
 	CD.MouseClick:Connect(function()
 		local char = Players.LocalPlayer.Character
-		local root = getRoot(char) or char:FindFirstChildOfClass("BasePart")
+		local root = getRoot(char) or char:FindFirstChildWhichIsA("BasePart")
 		root.CFrame = CFrame.new(921, 100, 2374)
 	end)
 	
